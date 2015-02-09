@@ -8,3 +8,13 @@ export APP_SETTINGS=config.DevelopmentConfig
 For heroku
 heroku config:set APP_SETTINGS=config.StagingConfig --remote stage
 heroku config:set APP_SETTINGS=config.ProductionConfig --remote pro
+
+
+Environment variable for DB:
+export DATABASE_URL="postgresql://localhost/pythia_dev"
+
+To create the DB:
+createdb pythia_dev
+python manage.py db init
+python manage.py db migrate
+python manage.py db upgrade

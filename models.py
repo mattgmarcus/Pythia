@@ -1,5 +1,12 @@
-class Loan:
-    def __init__(self):
+from app import db
+
+class Loan(db.Model):
+    __tablename__ = 'loans'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    def __init__(self, data):
+        self.id = data['id']
         '''
         self.id
         self.member_id
@@ -55,3 +62,5 @@ class Loan:
         self.policy_code
         '''
         
+    def __repr__(self):
+        return '<id {}>'.format(self.id)
