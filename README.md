@@ -20,3 +20,7 @@ To create the DB:
   python manage.py db init
   python manage.py db migrate
   python manage.py db upgrade
+
+
+To get up to do on migrations, you only have to do the command:
+   python manage.py db upgrade
