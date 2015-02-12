@@ -8,7 +8,7 @@ class Loan(db.Model):
     member_id = db.Column(db.Integer)
     loan_amount = db.Column(db.Integer)
     funded_amount = db.Column(db.Integer)
-    funded_amount_investors = db.Column(db.Integer)
+    funded_amount_investors = db.Column(db.Float)
     term = db.Column(db.Integer)
     interest_rate = db.Column(db.Float)
     installment = db.Column(db.Float)
@@ -16,18 +16,18 @@ class Loan(db.Model):
     sub_grade = db.Column(db.String)
     employee_title = db.Column(db.String)
     employment_length = db.Column(db.Integer)
-    home_ownership = db.Column(db.Integer) # Will express each state as a number
-    annual_income = db.Column(db.Integer)
+    home_ownership = db.Column(db.String) # It's the first character of the string from LC
+    annual_income = db.Column(db.Float)
     is_income_verified = db.Column(db.Boolean)
     issue_date = db.Column(db.DateTime)
-    loan_status = db.Column(db.Integer) # Will express status as a number
+    loan_status = db.Column(db.String)
     payment_plan = db.Column(db.Boolean)
     url = db.Column(db.String)
     description = db.Column(db.String)
-    purpose = db.Column(db.String) # This could also be an integer if there are only a few possible values
-    title = db.Column(db.String) # This could also be an integer if there are only a few possible values
+    purpose = db.Column(db.String)
+    title = db.Column(db.String)
     zip_code = db.Column(db.String) # Not integer because last two numbers omitted. Could also just store the first three values in integer
-    address_state = db.Column(db.String) # Could label each state 1-50 and do numbers
+    address_state = db.Column(db.String)
     debt_to_income = db.Column(db.Float)
     delinq_2yrs = db.Column(db.Integer)
     earliest_credit_line = db.Column(db.DateTime)
@@ -39,7 +39,7 @@ class Loan(db.Model):
     revolving_balance = db.Column(db.Integer)
     revolving_util = db.Column(db.Float)
     total_accounts = db.Column(db.Integer)
-    initial_list_status = db.Column(db.Integer) # w = 0, f = 1
+    initial_list_status = db.Column(db.String) # Either "w" or "f"
     outstanding_principal = db.Column(db.Float)
     outstanding_principal_investors = db.Column(db.Float)
     total_payment = db.Column(db.Float)
@@ -62,21 +62,21 @@ class Loan(db.Model):
         self.member_id = int(data["member_id"])
         self.loan_amount = int(data["loan_amnt"])
         self.funded_amount = int(data["funded_amnt"])
-        self.funded_amount_investors = int(data["funded_amnt_inv"])
+        self.funded_amount_investors = float(data["funded_amnt_inv"])
         self.term = int(data["term"].split(" ")[0])
         self.interest_rate = float(data["int_rate"][0:-1])
         self.installment = float(data["installment"])
         self.grade = data["grade"]
         self.sub_grade = data["sub_grade"]
         self.employee_title = data["emp_title"]
-        # TODO: parse month right
-        self.employment_length = data["emp_length"]
-        # TODO: Get home ownership as one of a few values
-        self.home_ownership = data["home_ownership"]
-        self.annual_income = int(data["annual_inc"])
+
+        self.employment_length = self.__parse_length(data["emp_length"])
+
+        self.home_ownership = data["home_ownership"][0]
+        self.annual_income = float(data["annual_inc"])
         self.is_income_verified = (data["is_inc_v"] == "Verified")
-        self.issue_date = __convert_lc_date(data["issue_d"])
-        # TODO: Figure out all the possible statuses and map to numbers
+        self.issue_date = self.__convert_lc_date(data["issue_d"])
+
         self.loan_status = data["loan_status"]
         self.payment_plan = (data["pymnt_plan"] == "y")
         self.url = data["url"]
@@ -87,22 +87,19 @@ class Loan(db.Model):
         self.address_state = data["addr_state"]
         self.debt_to_income = float(data["dti"])
         self.delinq_2yrs = int(data["delinq_2yrs"])
-        self.earliest_credit_line = __convert_lc_date(data["earliest_cr_line"])
+        self.earliest_credit_line = self.__convert_lc_date(data["earliest_cr_line"])
         self.inq_last_6mths = int(data["inq_last_6mths"])
 
-        self.mths_since_last_delinq = __set_if_present(data["mths_since_last_delinq"])
-        self.mths_since_last_record = __set_if_present(data["mths_since_last_record"])
+        self.mths_since_last_delinq = int(self.__set_if_present(data["mths_since_last_delinq"]))
+        self.mths_since_last_record = int(self.__set_if_present(data["mths_since_last_record"]))
 
         self.open_credit_lines = int(data["open_acc"])
         self.public_records = int(data["pub_rec"])
         self.revolving_balance = float(data["revol_bal"])
-        self.revolving_util = float(data["revol_util"][0:-1])
+        self.revolving_util = float(self.__set_if_present(data["revol_util"][0:-1]))
         self.total_accounts = int(data["total_acc"])
 
-        if data["initial_list_status"] == "w":
-            self.initial_list_status = 0
-        else: # == "f"
-            self.initial_list_status = 1
+        self.initial_list_status = data["initial_list_status"]
 
         self.outstanding_principal = float(data["out_prncp"])
         self.outstanding_principal_investors = float(data["out_prncp_inv"])
@@ -113,13 +110,13 @@ class Loan(db.Model):
         self.total_received_late_fees = float(data["total_rec_late_fee"])
         self.recoveries = float(data["recoveries"])
         self.collection_recovery_fee = float(data["collection_recovery_fee"])
-        self.last_payment_date = __convert_lc_date(data["last_pymnt_d"])
+        self.last_payment_date = self.__convert_lc_date(data["last_pymnt_d"])
         self.last_payment_amount = float(data["last_pymnt_amnt"])
-        self.next_payment_date = __convert_lc_date(data["next_pymnt_d"])
-        self.last_credit_pulled_date = __convert_lc_date(data["last_credit_pull_d"])
-        self.collections_12_mths = int(data["collections_12_mths_ex_med"])
+        self.next_payment_date = self.__convert_lc_date(data["next_pymnt_d"])
+        self.last_credit_pulled_date = self.__convert_lc_date(data["last_credit_pull_d"])
+        self.collections_12_mths = int(self.__set_if_present(data["collections_12_mths_ex_med"]))
 
-        self.mths_since_last_major_derog = __set_if_present(data["mths_since_last_major_derog"])
+        self.mths_since_last_major_derog = int(self.__set_if_present(data["mths_since_last_major_derog"]))
 
         self.policy_code = int(data["policy_code"])
 
@@ -127,13 +124,30 @@ class Loan(db.Model):
         self.json = { self.id: data }
 
     def __convert_lc_date(self, date):
-        datetime.strptime(date, "%b-%Y")
+        if not date:
+            return date
+        else:
+            return datetime.strptime(date, "%b-%Y")
 
     def __set_if_present(self, value):
         if not value:
             return 0
         else:
-            return int(value)
+            return value
+
+    # Possible formats for length are:
+    #   < 1 year
+    #   x year(s)
+    #   10+ years
+    # We want all of these to just return a number
+    # Less than 1 year will become 0
+    def __parse_length(self, length):
+        if length.find("<"):
+            return 0
+        elif length.find("+"):
+            return 10
+        else:
+            return length.split(" ")[0]
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
