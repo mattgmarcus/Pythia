@@ -110,7 +110,8 @@ class Loan(db.Model):
         self.mths_since_last_major_derog = data["mths_since_last_major_derog"]
         self.policy_code = data["policy_code"]
 
-        self.json = { self.id: data.pop("id") }
+        data.pop("id")
+        self.json = { self.id: data }
 
     def __repr__(self):
         return '<id {}>'.format(self.id)

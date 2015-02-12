@@ -24,3 +24,11 @@ To create the DB:
 
 To get up to do on migrations, you only have to do the command:
    python manage.py db upgrade
+
+
+
+To install autoenv
+   brew install autoenv
+Add this line to ~/.bash_profile or ~/.bashrc, whichever one you use
+    source /usr/local/opt/autoenv/activate.sh
+Note: For Shuo, in the .env file you may have to change your DATABASE_URL to the 2nd one above
