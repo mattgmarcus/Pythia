@@ -21,7 +21,6 @@ def read_loans(filename):
         continue
 
       row = { k: strip_whitespace(v) for k, v in row.items() }
-      print row
 
       loan = Loan(row)
 
