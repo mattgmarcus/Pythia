@@ -1,26 +1,38 @@
 #!/usr/bin/env python
 import csv
+import os
 from models import Loan
+from flask import Flask
+from flask.ext.sqlalchemy import SQLAlchemy
+
+app = Flask(__name__)
+app.config.from_object(os.environ["APP_SETTINGS"])
+db = SQLAlchemy(app)
 
 
-def read_loans():
-  with open('LoanStats3a.csv', 'r') as csvfile:
+def read_loans(filename):
+  with open(filename, "r") as csvfile:
     # Skip the first line of notes
     csvfile.next()
     loanStatsReader = csv.DictReader(csvfile)
     for row in loanStatsReader:
-      print row
+      # Make sure the row's not empty. This choice of field is arbitrary
       if not row["mths_since_last_delinq"]:
         continue
 
       row = { k: strip_whitespace(v) for k, v in row.items() }
       print row
+
       loan = Loan(row)
-      print loan
+
+      db.session.add(loan)
+      db.session.commit()
 
 def strip_whitespace(val):
   return val.strip()
 
 
 if __name__=="__main__":
-  read_loans()
+  approved_loan_files = ["LoanStats3a.csv", "LoanStats3b.csv", "LoanStats3c.csv"]
+  for filename in approved_loan_files:
+    read_loans(filename)

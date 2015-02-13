@@ -24,7 +24,12 @@ To create the DB:
 To get up to do on migrations, you only have to do the command:
    python manage.py db upgrade
 
+I was having random issues with migrations related to libssl and libcrypto. These lines fixed it
+  sudo ln -s /Applications/Postgres.app/Contents/Versions/9.4/lib/libssl.1.0.0.dylib /usr/lib
+  sudo ln -s /Applications/Postgres.app/Contents/Versions/9.4/lib/libcrypto.1.0.0.dylib /usr/lib
 
+If you ever want to just delete all the records in a table in your DB, which you sometimes have to do when I mess up, do this for each table name
+   DELETE FROM <TABLENAME> *;
 
 To install autoenv
    brew install autoenv

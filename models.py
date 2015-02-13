@@ -125,7 +125,7 @@ class Loan(db.Model):
 
     def __convert_lc_date(self, date):
         if not date:
-            return date
+            return None
         else:
             return datetime.strptime(date, "%b-%Y")
 
