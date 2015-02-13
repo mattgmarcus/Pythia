@@ -1,6 +1,35 @@
 import numpy as np
 import scipy as sp
 
+"""
+Psuedocode for growing decision tree
+
+
+
+node_split(): given set of features determine which feature to split on by minimizing the
+gini index in the child nodes and provides the best feature test
+
+Parameters:
+samples: training samples
+features: features for each training sample
+default: a default tree
+
+fit(samples, features, default):
+if samples is empty: return default
+elif all samples have same class: return class
+elif features is empty: return majority vote
+else
+	feature_test = node_split()
+	tree <- root node of new tree using feature_test
+	for each value Vi of feature_test:
+		sub_samples <- elements of samples with Vi
+		subtree <- fit(sub_samples, features - feature_test, MODE(samples) aka majority vote)
+		tree.add_branch with label Vi and subtree
+
+	return tree
+
+"""
+
 class Node(object):
 	def __init__(self):
 		self.split_feature = None
@@ -35,6 +64,7 @@ class CartTree(self):
 
 		Return:
 		self (CartTree)
+
 		"""
 
 
@@ -55,9 +85,12 @@ class CartTree(self):
 		Measures how often randomly chosen element from set would be incorrectly labeled if it were randomly labeled
 		using label distribution in subset.
 		Sum probability of each item being chosen times probability of mistake in categorizing item
+		
+		Y -> set of all classes
+		sum for all y in Y
+		P(y) * (1 - P(y))
 
-		1 - sum i = 1 -> m (fi^2)
-		fi = fraction of items labeled with value i in set
+		aka prob. of choosing * prob. of mistake
 		"""
 
 
