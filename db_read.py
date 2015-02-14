@@ -3,28 +3,25 @@ from sqlalchemy import *
 import numpy as np
 import scipy as sp
 from models import Loan
+import random
 
 def get_data():
+  fields = "loan_amount, funded_amount, funded_amount_investors, term, interest_rate, installment, grade, sub_grade, employee_title, employment_length, home_ownership, annual_income, is_income_verified, loan_status, payment_plan, purpose, zip_code, address_state, debt_to_income, delinq_2yrs, inq_last_6mths, mths_since_last_delinq, open_credit_lines, public_records, revolving_balance, revolving_util, total_accounts, initial_list_status, outstanding_principal, outstanding_principal_investors, total_payment, total_payment_investors, total_received_principal, total_received_interest, total_received_late_fees, recoveries, collection_recovery_fee, last_payment_amount, collections_12_mths, mths_since_last_major_derog, policy_code, mths_since_last_record"
+
+
   meta = MetaData()
 
   engine = create_engine("postgresql://localhost/pythia_dev", isolation_level="READ UNCOMMITTED")
-  sql = text("select * from loans where loan_status != \'Current\'")
+  sql = text("select %s from loans where loan_status != \'Current\'" % fields)
   result = engine.connect().execute(sql)
   loans = Table('loans', meta, autoload=True, autoload_with=engine)
 
   features = []
 
-  count = 0
   for row in result:
-    # r = dict(row.items())
-    # r['issue_date'] = r['issue_date'].toordinal()
-    # r['earliest_credit_line'] = r['earliest_credit_line'].toordinal()
-    # r['last_credit_pulled_date'] = r['last_credit_pulled_date'].toordinal()
-    # features.append(r.values())
-    if count == 1000:
-      break
     features.append(row)
-    count += 1
+
+  features = random.sample(features, 1000)
 
   labels = map(lambda vector: 1 if vector[16] == 'Fully Paid' else 0, features)
 
