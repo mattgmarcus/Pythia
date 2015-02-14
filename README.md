@@ -37,9 +37,3 @@ Add this line to ~/.bash_profile or ~/.bashrc, whichever one you use
     source /usr/local/opt/autoenv/activate.sh
 Note: For Shuo, in the .env file you may have to change your DATABASE_URL to the 2nd one above
 
-ATTENTION MATT!
-Delete these fields that probably won't have a large impact but are currently interfering with string to float conversions:
-    url
-    desc
-    title
-    all dates
