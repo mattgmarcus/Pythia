@@ -5,8 +5,6 @@ import collections import Counter
 """
 Psuedocode for growing decision tree
 
-
-
 node_split(): given set of features determine which feature to split on by minimizing the
 gini index in the child nodes and provides the best feature test
 
@@ -35,6 +33,7 @@ class Node(object):
 	def __init__(self):
 		self.split_feature = None
     self.split_test = None
+    self.samples = None
 		self.left_child = None
 		self.right_child = None
 
@@ -42,7 +41,7 @@ class Leaf(object):
 	def __init__(self):
 		self.value = None
 
-class CartTree(self):
+class DecisionTreeClassifier(self):
 	"""Decision Tree using CART method"""
 	def __init__(self):
 		self.classes = None
@@ -65,7 +64,7 @@ class CartTree(self):
 		the corresponding training sample
 
 		Return:
-		self (CartTree)
+		self (DecisionTreeClassifier)
 
 		"""
 
@@ -105,12 +104,23 @@ class CartTree(self):
 
 
   def _split(samples, split_test):
-    pass_samples = []
-    fail_samples = []
-    for sample in samples:
-      if split_test(sample):
-        pass_samples.append(sample)
+    """
+    Split samples given a function that represents the feature split test
+
+    Parameters:
+      samples: the samples we are interested in splitting, usually probably Node.samples
+      split_test: function (feature_vector -> {true, false})
+
+    Returns:
+      pass_index: index of samples that passed split_test
+      fail_index: index of samples that failed split_test
+    """
+    pass_index = []
+    fail_index = []
+    for i in range(0, len(samples)):
+      if split_test(samples[i]):
+        pass_index.append(i)
       else:
-        fail_samples.append(sample)
-    return np.array(pass_samples), np.array(fail_samples)
+        fail_index.append(i)
+    return pass_index, fail_index
 
