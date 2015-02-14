@@ -1,6 +1,7 @@
 import numpy as np
 import scipy as sp
-import collections import Counter
+from collections import Counter
+from operator import itemgetter
 
 """
 Psuedocode for growing decision tree
@@ -57,14 +58,14 @@ class DecisionTreeClassifier(self):
 		Build decision tree using the training data
 
 		Parameters:
-		X: m x d matrix where each row vector represents a feature vector.
-		m training samples and each have d features
+      X: m x d matrix where each row vector represents a feature vector.
+      m training samples and each have d features
 
-		Y: m x 1 vector where each scalar value represents the correct value for
-		the corresponding training sample
+      Y: m x 1 vector where each scalar value represents the correct value for
+      the corresponding training sample
 
 		Return:
-		self (DecisionTreeClassifier)
+		  self (DecisionTreeClassifier)
 
 		"""
 
@@ -77,6 +78,27 @@ class DecisionTreeClassifier(self):
 
 		self.classes = np.unique(Y)
 		self.n_classes = self.classes.shape[0]
+
+    # Choose best feature and threshold to split on
+    # currently only at top level node, need to include into a for loop or recursion to recurse
+    # until certain condition is met, i.e. all leaf nodes have less than 5 samples.
+    # X_{ij} means sample i feature j
+    gini_score = []
+    split_fns = []
+    for j in range(self.d_features):
+      """
+      Get range of training samples with respect to feature j
+      threshold = iterate over all possible discrete (continuous???) values of feature j
+      def split_function(feature_vector):
+        return feature_vector[j] < threshold
+
+      pass_index, fail_index = _split(X, split_function)
+      split_fns.append(split_function)
+      gini_score.append(_gini_impurity(Y(pass_index)) + _gini_impurity(Y(fail_index)))
+      """
+      # Get index of mininum gini score
+      min_gini_index, _ = min(enumerate(values), key=itemgetter(1))
+      best_split_function = split_fns(min_gini_index)
 
 
 	def _gini_impurity(labels):

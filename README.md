@@ -37,3 +37,7 @@ Add this line to ~/.bash_profile or ~/.bashrc, whichever one you use
     source /usr/local/opt/autoenv/activate.sh
 Note: For Shuo, in the .env file you may have to change your DATABASE_URL to the 2nd one above
 
+Do not include:
+id
+member_id
+
