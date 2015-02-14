@@ -57,6 +57,8 @@ class Loan(db.Model):
     mths_since_last_major_derog = db.Column(db.Integer)
     policy_code = db.Column(db.Integer) # 1 = publicly available, 2 = not publicly available
 
+    is_test_data = db.Column(db.Boolean)
+
     def __init__(self, data):
         self.id = int(data["id"])
         self.member_id = int(data["member_id"])
