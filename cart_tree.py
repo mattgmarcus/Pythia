@@ -33,6 +33,7 @@ else
 class Node(object):
 	def __init__(self):
 		self.split_feature = None
+    self.split_test = None
 		self.left_child = None
 		self.right_child = None
 
@@ -78,14 +79,16 @@ class CartTree(self):
 		self.n_classes = self.classes.shape[0]
 
 
-
-
-	def gini_impurity():
+	def _gini_impurity(samples, split_test):
 		"""
 		Measures how often randomly chosen element from set would be incorrectly labeled if it were randomly labeled
 		using label distribution in subset.
 		Sum probability of each item being chosen times probability of mistake in categorizing item
-		
+
+    Parameters:
+      samples: set of samples at each node level
+      split_test: callback function that returns true if pass, false if fail
+
 		Y -> set of all classes
 		sum for all y in Y
 		P(y) * (1 - P(y))
@@ -93,6 +96,16 @@ class CartTree(self):
 		aka prob. of choosing * prob. of mistake
 		"""
 
+    pass_samples, fail_samples = _split(samples, split_test)
 
 
-	
+  def _split(samples, split_test):
+    pass_samples = []
+    fail_samples = []
+    for sample in samples:
+      if split_test(sample):
+        pass_samples.append(sample)
+      else:
+        fail_samples.append(sample)
+    return np.array(pass_samples), np.array(fail_samples)
+
