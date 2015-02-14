@@ -1,5 +1,6 @@
 import numpy as np
 import scipy as sp
+import collections import Counter
 
 """
 Psuedocode for growing decision tree
@@ -79,15 +80,14 @@ class CartTree(self):
 		self.n_classes = self.classes.shape[0]
 
 
-	def _gini_impurity(samples, split_test):
+	def _gini_impurity(labels):
 		"""
 		Measures how often randomly chosen element from set would be incorrectly labeled if it were randomly labeled
 		using label distribution in subset.
 		Sum probability of each item being chosen times probability of mistake in categorizing item
 
     Parameters:
-      samples: set of samples at each node level
-      split_test: callback function that returns true if pass, false if fail
+      labels: labels of the samples we are testing gini impurity
 
 		Y -> set of all classes
 		sum for all y in Y
@@ -95,8 +95,13 @@ class CartTree(self):
 
 		aka prob. of choosing * prob. of mistake
 		"""
-
-    pass_samples, fail_samples = _split(samples, split_test)
+    # Aggregate counts
+    count = Counter(labels)
+    gini = 0
+    for label in labels:
+      f = count(label) / len(labels)
+      gini += f * ( 1 - f)
+    return gini
 
 
   def _split(samples, split_test):
