@@ -1,37 +1,22 @@
 #!/usr/bin/env python
-import csv
-import os
-from models import Loan
-from flask import Flask
-from flask.ext.sqlalchemy import SQLAlchemy
-
-app = Flask(__name__)
-app.config.from_object(os.environ["APP_SETTINGS"])
-db = SQLAlchemy(app)
-
-
-def read_loans(filename):
-  with open(filename, "r") as csvfile:
-    # Skip the first line of notes
-    csvfile.next()
-    loanStatsReader = csv.DictReader(csvfile)
-    for row in loanStatsReader:
-      # Make sure the row's not empty. This choice of field is arbitrary
-      if not row["mths_since_last_delinq"]:
-        continue
-
-      row = { k: strip_whitespace(v) for k, v in row.items() }
-
-      loan = Loan(row)
-
-      db.session.add(loan)
-      db.session.commit()
-
-def strip_whitespace(val):
-  return val.strip()
-
+import numpy as np
+import scipy as sp
+from db_read import get_data
+from sklearn.ensemble import RandomForestClassifier
 
 if __name__=="__main__":
-  approved_loan_files = ["LoanStats3a.csv", "LoanStats3b.csv", "LoanStats3c.csv"]
-  for filename in approved_loan_files:
-    read_loans(filename)
+  features, labels = get_data()
+  """
+  train_features: size (m, n) matrix of m samples of n features
+  train_labels: size (m, 1) vector of the m training samples
+  test_features: size (k, n) matrix of k samples of n features
+  train_labels: size (k, 1) vector of the k training samples
+  """
+  # classifier = RandomForestClassifier(n_estimators=100, \
+  #                                     n_jobs=-1, \
+  #                                     verbose=1)
+  # classifier.fit(train_features, train_labels)
+  # print "Random forest predicted with ", \
+  #       "{0:.0f}%".format(classifier(test_features, test_labels)), \
+  #       "accuracy."
+  print features, labels
