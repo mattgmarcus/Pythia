@@ -28,7 +28,7 @@ class Loan(db.Model):
     delinq_2yrs = db.Column(db.Integer)
     inq_last_6mths = db.Column(db.Integer)
     mths_since_last_delinq = db.Column(db.Integer)
-    mth_since_last_record = db.Column(db.Integer)
+    mths_since_last_record = db.Column(db.Integer)
     open_credit_lines = db.Column(db.Integer)
     public_records = db.Column(db.Integer)
     revolving_balance = db.Column(db.Integer)
