@@ -19,18 +19,13 @@ class Loan(db.Model):
     home_ownership = db.Column(db.String) # It's the first character of the string from LC
     annual_income = db.Column(db.Float)
     is_income_verified = db.Column(db.Boolean)
-    issue_date = db.Column(db.DateTime)
     loan_status = db.Column(db.String)
     payment_plan = db.Column(db.Boolean)
-    url = db.Column(db.String)
-    description = db.Column(db.String)
     purpose = db.Column(db.String)
-    title = db.Column(db.String)
     zip_code = db.Column(db.String) # Not integer because last two numbers omitted. Could also just store the first three values in integer
     address_state = db.Column(db.String)
     debt_to_income = db.Column(db.Float)
     delinq_2yrs = db.Column(db.Integer)
-    earliest_credit_line = db.Column(db.DateTime)
     inq_last_6mths = db.Column(db.Integer)
     mths_since_last_delinq = db.Column(db.Integer)
     mth_since_last_record = db.Column(db.Integer)
@@ -49,13 +44,12 @@ class Loan(db.Model):
     total_received_late_fees = db.Column(db.Float)
     recoveries = db.Column(db.Float)
     collection_recovery_fee = db.Column(db.Float)
-    last_payment_date = db.Column(db.DateTime)
     last_payment_amount = db.Column(db.Float)
-    next_payment_date = db.Column(db.DateTime)
-    last_credit_pulled_date = db.Column(db.DateTime)
     collections_12_mths = db.Column(db.Integer)
     mths_since_last_major_derog = db.Column(db.Integer)
     policy_code = db.Column(db.Integer) # 1 = publicly available, 2 = not publicly available
+
+    is_test_data = db.Column(db.Boolean)
 
     def __init__(self, data):
         self.id = int(data["id"])
@@ -75,19 +69,14 @@ class Loan(db.Model):
         self.home_ownership = data["home_ownership"][0]
         self.annual_income = float(data["annual_inc"])
         self.is_income_verified = (data["is_inc_v"] == "Verified")
-        self.issue_date = self.__convert_lc_date(data["issue_d"])
 
         self.loan_status = data["loan_status"]
         self.payment_plan = (data["pymnt_plan"] == "y")
-        self.url = data["url"]
-        self.description = data["desc"]
         self.purpose = data["purpose"]
-        self.title = data["title"]
         self.zip_code = data["zip_code"]
         self.address_state = data["addr_state"]
         self.debt_to_income = float(data["dti"])
         self.delinq_2yrs = int(data["delinq_2yrs"])
-        self.earliest_credit_line = self.__convert_lc_date(data["earliest_cr_line"])
         self.inq_last_6mths = int(data["inq_last_6mths"])
 
         self.mths_since_last_delinq = int(self.__set_if_present(data["mths_since_last_delinq"]))
@@ -110,10 +99,7 @@ class Loan(db.Model):
         self.total_received_late_fees = float(data["total_rec_late_fee"])
         self.recoveries = float(data["recoveries"])
         self.collection_recovery_fee = float(data["collection_recovery_fee"])
-        self.last_payment_date = self.__convert_lc_date(data["last_pymnt_d"])
         self.last_payment_amount = float(data["last_pymnt_amnt"])
-        self.next_payment_date = self.__convert_lc_date(data["next_pymnt_d"])
-        self.last_credit_pulled_date = self.__convert_lc_date(data["last_credit_pull_d"])
         self.collections_12_mths = int(self.__set_if_present(data["collections_12_mths_ex_med"]))
 
         self.mths_since_last_major_derog = int(self.__set_if_present(data["mths_since_last_major_derog"]))
