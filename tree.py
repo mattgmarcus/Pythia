@@ -2,6 +2,7 @@ import numpy as np
 import scipy as sp
 from collections import Counter
 from operator import itemgetter
+from sklearn.feature_extraction import DictVectorizer
 
 """
 Psuedocode for growing decision tree
@@ -77,34 +78,49 @@ class DecisionTreeClassifier():
       self (DecisionTreeClassifier)
     """
 
+    # Todo: we'll have to figure out a way to take advantage of column indexing here.
+    # May have to convert back to nparray as passed in later
+    samples = self._sanitize_samples(samples)
+    samples = np.array(samples)
 
     self.d_features = samples.shape[1]
     self.classes = np.unique(labels)
     self.n_classes = self.classes.shape[0]
 
-    samples = self._sanitize_samples(samples)
-
     self.root_node = self.root_node or self._fit(samples, labels)
 
-
   def _sanitize_samples(self, samples):
-    for feature in samples[0]:
-      if type(feature)
+    samples = [dict(enumerate(sample)) for sample in samples]
+    vect = DictVectorizer(sparse=False)
+    samples = vect.fit_transform(samples)
+
+
+  # def _sanitize_samples(self, samples):
+    # TODO: Finish. Deal with issue where arrays with mixed types have all values
+    # as strings
+    # columns_to_delete = []
+    # for index, feature in enumerate(samples[0]):
+    #   if type(feature) is str:
+    #     columns_to_delete.append(index)
+    #     samples = self._vectorize_string(samples, index)
+
+    # for col in columns_to_delete.reverse():
+    #   samples = np.delete(samples, col, 1)
 
   # Function to take categorical feature and convert to binary values in features
-  def _vectorize_string(self, samples, column_num):
-    feature_values = list(set(samples[:,column_num]))
-    index = { key: val for val, key in enumerate(feature_values) }
+  # def _vectorize_string(self, samples, column_num):
+  #   feature_values = list(set(samples[:,column_num]))
+  #   index = { key: val for val, key in enumerate(feature_values) }
 
-    vectors = []
-    for sample in samples:
-      vector = [0] * len(index)
-      vector[index[sample[column_num]]] = 1
-      vectors.append(vector)
+  #   vectors = []
+  #   for sample in samples:
+  #     vector = [0] * len(index)
+  #     vector[index[sample[column_num]]] = 1
+  #     vectors.append(vector)
 
-    samples = np.delete(samples, column_num, 1)
-    samples = np.append(samples, np.array(vectors), 1)
-    return samples
+  #   # samples = np.delete(samples, column_num, 1)
+  #   samples = np.append(samples, np.array(vectors), 1)
+  #   return samples
 
 
   # function (feature_vector -> {true, false})
