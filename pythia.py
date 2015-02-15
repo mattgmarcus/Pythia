@@ -9,6 +9,7 @@ from sklearn.preprocessing import Imputer
 
 if __name__=="__main__":
   features, labels = get_data()
+  print features, labels
   # features = [dict(r.iteritems()) for r in features]
   # vect = DictVectorizer()
   # vectorized_sparse = vect.fit_transform(features)
@@ -31,11 +32,14 @@ if __name__=="__main__":
   test_features: size (k, n) matrix of k samples of n features
   train_labels: size (k, 1) vector of the k training samples
   """
-  classifier = RandomForestClassifier(n_estimators=50, \
+  classifier = RandomForestClassifier(n_estimators=1000, \
                                       n_jobs=-1, \
-                                      verbose=1)
-  classifier.fit(train_features, train_labels)
+                                      verbose=1,
+                                      oob_score=True,
+                                      max_features=None)
+  classifier.fit(train_features, train_labels).oob_score_
   print "Random forest predicted with ", \
         "{0:.0f}%".format(classifier.score(test_features, test_labels)), \
         "accuracy."
+  print classifier.score(test_features, test_labels)
   # print features, labels
