@@ -17,11 +17,14 @@ if __name__=="__main__":
   
   features = [dict(enumerate(feature)) for feature in features]
   vect = DictVectorizer(sparse=False)
+  print features
   features = vect.fit_transform(features)
+  print features.shape
 
-  imp = Imputer(missing_values='NaN', strategy='mean', axis=0)
-  imp.fit(features)
-  features = imp.transform(features)
+  # imp = Imputer(missing_values='NaN', strategy='mean', axis=0)
+  # imp.fit(features)
+  # features = imp.transform(features)
+  # print features.shape
 
   train_features, test_features, train_labels, test_labels =\
   train_test_split(features, labels, test_size=.3)
@@ -37,9 +40,14 @@ if __name__=="__main__":
                                       verbose=1,
                                       oob_score=True,
                                       max_features=None)
-  classifier.fit(train_features, train_labels).oob_score_
-  print "Random forest predicted with ", \
-        "{0:.0f}%".format(classifier.score(test_features, test_labels)), \
-        "accuracy."
-  print classifier.score(test_features, test_labels)
+
+  classifier.fit(train_features, train_labels)
+  importances = classifier.feature_importances_
+
+  print importances.shape
+
+  # print "Random forest predicted with ", \
+  #       "{0:.0f}%".format(classifier.score(test_features, test_labels)), \
+  #       "accuracy."
+  # print classifier.score(test_features, test_labels)
   # print features, labels
