@@ -14,10 +14,10 @@ def sort_labels(label):
 
 def get_data():
   # First field of fields has to be loan_status
-  # fields = "loan_status, loan_amount, funded_amount, funded_amount_investors, term, interest_rate, installment, grade, sub_grade, employee_title, employment_length, home_ownership, annual_income, is_income_verified, payment_plan, purpose, zip_code, address_state, debt_to_income, delinq_2yrs, inq_last_6mths, mths_since_last_delinq, open_credit_lines, public_records, revolving_balance, revolving_util, total_accounts, initial_list_status, outstanding_principal, outstanding_principal_investors, total_payment, total_payment_investors, total_received_principal, total_received_interest, total_received_late_fees, recoveries, collection_recovery_fee, last_payment_amount, collections_12_mths, mths_since_last_major_derog, policy_code, mths_since_last_record"
+  fields = "loan_status, loan_amount, funded_amount, funded_amount_investors, term, interest_rate, installment, grade, sub_grade, employee_title, employment_length, home_ownership, annual_income, is_income_verified, payment_plan, purpose, zip_code, address_state, debt_to_income, delinq_2yrs, inq_last_6mths, mths_since_last_delinq, open_credit_lines, public_records, revolving_balance, revolving_util, total_accounts, initial_list_status, outstanding_principal, outstanding_principal_investors, total_payment, total_payment_investors, total_received_principal, total_received_interest, total_received_late_fees, recoveries, collection_recovery_fee, last_payment_amount, collections_12_mths, mths_since_last_major_derog, policy_code, mths_since_last_record"
   #fields = "loan_status, grade, sub_grade"
   # fields = 'loan_status'
-  fields = "loan_status, purpose"
+  # fields = "loan_status, purpose"
   # fields = "loan_status, funded_amount, total_received_late_fees, inq_last_6mths, delinq_2yrs, mths_since_last_major_derog, is_income_verified, debt_to_income, grade, sub_grade, purpose, employment_length, home_ownership, annual_income, interest_rate, term"
 
   meta = MetaData()

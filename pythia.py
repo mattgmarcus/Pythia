@@ -9,17 +9,15 @@ from sklearn.preprocessing import Imputer
 
 if __name__=="__main__":
   features, labels = get_data()
-  print features, labels
+  # print features, labels
   # features = [dict(r.iteritems()) for r in features]
   # vect = DictVectorizer()
   # vectorized_sparse = vect.fit_transform(features)
   # features = vectorized_sparse.toarray()
-  
+
   features = [dict(enumerate(feature)) for feature in features]
   vect = DictVectorizer(sparse=False)
-  print features
   features = vect.fit_transform(features)
-  print features.shape
 
   # imp = Imputer(missing_values='NaN', strategy='mean', axis=0)
   # imp.fit(features)
@@ -43,8 +41,12 @@ if __name__=="__main__":
 
   classifier.fit(train_features, train_labels)
   importances = classifier.feature_importances_
-
-  print importances.shape
+  print zip(vect.get_feature_names(), importances)
+  # print vect.feature_names_
+  # print vect.vocabulary_
+  # print vect.inverse_transform(importances)
+  # print importances
+  # print importances.shape
 
   # print "Random forest predicted with ", \
   #       "{0:.0f}%".format(classifier.score(test_features, test_labels)), \
