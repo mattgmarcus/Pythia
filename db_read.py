@@ -32,6 +32,7 @@ def get_data():
 
   num_charged_off = 0
   num_paid = 0
+  shuffle(result)
   for row in result:
     status = row[0]
     if (status == "Fully Paid") and (num_paid < half_sample_size):
