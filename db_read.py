@@ -13,7 +13,7 @@ def loan_status_labels(label):
     return 0
 
 def get_data(feature_fields=["purpose"], label_fields=["loan_status"], label_mapping=loan_status_labels,
-             shuffle=True, testing=True):
+             shuffle=False, testing=False):
   """
   Grabs information from the database and returns them as a multi-dimensional list of features and
   a list of labels
@@ -28,8 +28,8 @@ def get_data(feature_fields=["purpose"], label_fields=["loan_status"], label_map
     testing: bool determine whether in testing mode
 
   Returns:
-    features:
-    labels:
+    features: (m, n) multidimensional list of m samples with n features
+    labels: (m, 1) list of m labels
 
   Fields include "loan_status, loan_amount, funded_amount, funded_amount_investors, term,
   interest_rate, installment, grade, sub_grade, employee_title, employment_length, home_ownership,
@@ -65,7 +65,7 @@ def get_data(feature_fields=["purpose"], label_fields=["loan_status"], label_map
     features, labels = zip(*combined)
 
   if testing:
-    half_sample_size = 1000
+    half_sample_size = 3000
     num_charged_off = 0
     num_paid = 0
 

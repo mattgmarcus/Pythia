@@ -16,17 +16,17 @@ if __name__=="__main__":
       "term",
       "interest_rate",
       "installment",
-      #"grade",
+      "grade",
       #"sub_grade",
-      "employee_title",
+      #"employee_title",
       "employment_length",
       "home_ownership",
       "annual_income",
       "is_income_verified",
       "payment_plan",
       "purpose",
-      "zip_code",
-      "address_state",
+      #"zip_code",
+      #"address_state",
       "debt_to_income",
       "delinq_2yrs",
       "inq_last_6mths",
@@ -55,7 +55,10 @@ if __name__=="__main__":
   label_fields = [
       "loan_status"
   ]
-  features, labels = get_data(feature_fields=feature_fields, label_fields=label_fields)
+  features, labels = get_data(feature_fields=feature_fields,
+                              label_fields=label_fields,
+                              shuffle=True,
+                              testing=True)
   #print features, labels
   # features = [dict(r.iteritems()) for r in features]
   # vect = DictVectorizer()
