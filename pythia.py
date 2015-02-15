@@ -8,18 +8,65 @@ from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import Imputer
 
 if __name__=="__main__":
-  features, labels = get_data()
-  print features, labels
+  feature_fields = [
+      #"loan_status",
+      "loan_amount",
+      "funded_amount",
+      "funded_amount_investors",
+      "term",
+      "interest_rate",
+      "installment",
+      #"grade",
+      #"sub_grade",
+      "employee_title",
+      "employment_length",
+      "home_ownership",
+      "annual_income",
+      "is_income_verified",
+      "payment_plan",
+      "purpose",
+      "zip_code",
+      "address_state",
+      "debt_to_income",
+      "delinq_2yrs",
+      "inq_last_6mths",
+      "mths_since_last_delinq",
+      "open_credit_lines",
+      "public_records",
+      "revolving_balance",
+      "revolving_util",
+      "total_accounts",
+      #"initial_list_status",
+      #"outstanding_principal",
+      #"outstanding_principal_investors",
+      #"total_payment",
+      #"total_payment_investors",
+      #"total_received_principal",
+      #"total_received_interest",
+      #"total_received_late_fees",
+      #"recoveries",
+      #"collection_recovery_fee",
+      #"last_payment_amount",
+      "collections_12_mths",
+      "mths_since_last_major_derog",
+      "policy_code",
+      "mths_since_last_record"
+  ]
+  label_fields = [
+      "loan_status"
+  ]
+  features, labels = get_data(feature_fields=feature_fields, label_fields=label_fields)
+  #print features, labels
   # features = [dict(r.iteritems()) for r in features]
   # vect = DictVectorizer()
   # vectorized_sparse = vect.fit_transform(features)
   # features = vectorized_sparse.toarray()
-  
+
   features = [dict(enumerate(feature)) for feature in features]
   vect = DictVectorizer(sparse=False)
-  print features
+  #print features
   features = vect.fit_transform(features)
-  print features.shape
+  #print features.shape
 
   # imp = Imputer(missing_values='NaN', strategy='mean', axis=0)
   # imp.fit(features)
@@ -37,17 +84,13 @@ if __name__=="__main__":
   """
   classifier = RandomForestClassifier(n_estimators=1000, \
                                       n_jobs=-1, \
-                                      verbose=1,
+                                      verbose=3,
                                       oob_score=True,
                                       max_features=None)
 
   classifier.fit(train_features, train_labels)
   importances = classifier.feature_importances_
 
-  print importances.shape
+  #print importances.shape
 
-  # print "Random forest predicted with ", \
-  #       "{0:.0f}%".format(classifier.score(test_features, test_labels)), \
-  #       "accuracy."
-  # print classifier.score(test_features, test_labels)
-  # print features, labels
+  print classifier.score(test_features, test_labels)
