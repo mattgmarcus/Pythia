@@ -139,8 +139,8 @@ class DecisionTreeClassifier(self):
     """
     pass_index = []
     fail_index = []
-    for i in range(0, len(samples)):
-      if split_test(samples[i]):
+    for i, sample in enumerate(samples):
+      if split_test(sample):
         pass_index.append(i)
       else:
         fail_index.append(i)
