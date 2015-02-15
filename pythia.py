@@ -16,7 +16,7 @@ if __name__=="__main__":
       "term",
       "interest_rate",
       "installment",
-      "grade",
+      #"grade",
       #"sub_grade",
       #"employee_title",
       "employment_length",

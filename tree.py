@@ -19,119 +19,168 @@ if samples is empty: return default
 elif all samples have same class: return class
 elif features is empty: return majority vote
 else
-	feature_test = node_split()
-	tree <- root node of new tree using feature_test
-	for each value Vi of feature_test:
-		sub_samples <- elements of samples with Vi
-		subtree <- fit(sub_samples, features - feature_test, MODE(samples) aka majority vote)
-		tree.add_branch with label Vi and subtree
+  feature_test = node_split()
+  tree <- root node of new tree using feature_test
+  for each value Vi of feature_test:
+    sub_samples <- elements of samples with Vi
+    subtree <- fit(sub_samples, features - feature_test, MODE(samples) aka majority vote)
+    tree.add_branch with label Vi and subtree
 
-	return tree
+  return tree
 
 """
 
-class Node(object):
-	def __init__(self):
-		self.split_feature = None
-    self.split_test = None
-    self.samples = None
-		self.left_child = None
-		self.right_child = None
+class Node():
+  def __init__(self, splitter, left_child, right_child):
+    self.splitter = splitter
+    self.left_child = left_child
+    self.right_child = right_child
 
-class Leaf(object):
-	def __init__(self):
-		self.value = None
+  def __str__(self):
+    print self.left_child
+    print self.right_child
+    return str(self.splitter)
 
-class DecisionTreeClassifier(self):
-	"""Decision Tree using CART method"""
-	def __init__(self):
-		self.classes = None
-		self.n_classes = None
-		self.m_outputs = None
-		self.d_features = None
-		self.feature_relevances = None
-		self.splitter = None
-		self.class_weights = None
 
-	def fit(self, X, Y, sample_weight=None):
-		"""
-		Build decision tree using the training data
+class Leaf(Node):
+  def __init__(self, value):
+    self.value = value
 
-		Parameters:
+  def __str__(self):
+    return self.value
+
+
+class DecisionTreeClassifier():
+  """Decision Tree using CART method"""
+  def __init__(self, max_depth):
+    self.classes = None
+    self.n_classes = None
+    self.d_features = None
+    self.feature_relevances = None
+    self.class_weights = None
+
+    self.root_node = None
+    self.max_depth = max_depth
+
+  def fit(self, samples, labels, sample_weight=None):
+    """
+    Build decision tree using the training data
+
+    Parameters:
       X: m x d matrix where each row vector represents a feature vector.
       m training samples and each have d features
 
       Y: m x 1 vector where each scalar value represents the correct value for
       the corresponding training sample
 
-		Return:
-		  self (DecisionTreeClassifier)
-
-		"""
-
-
-		m_samples, self.d_features = X.shape
-
-		Y = np.atleast_1d(Y)
-
-		self.m_outputs = Y.shape[0]
-
-		self.classes = np.unique(Y)
-		self.n_classes = self.classes.shape[0]
-
-    # Choose best feature and threshold to split on
-    # currently only at top level node, need to include into a for loop or recursion to recurse
-    # until certain condition is met, i.e. all leaf nodes have less than 5 samples.
-    # X_{ij} means sample i feature j
-    gini_score = []
-    split_fns = []
-    for j in range(self.d_features):
-      """
-      Get range of training samples with respect to feature j
-      threshold = iterate over all possible discrete (continuous???) values of feature j
-      def split_function(feature_vector):
-        return feature_vector[j] < threshold
-
-      pass_index, fail_index = _split(X, split_function)
-      split_fns.append(split_function)
-      gini_score.append(_gini_impurity(Y(pass_index)) + _gini_impurity(Y(fail_index)))
-      """
-      # Get index of mininum gini score
-      min_gini_index, _ = min(enumerate(values), key=itemgetter(1))
-      best_split_function = split_fns(min_gini_index)
+    Return:
+      self (DecisionTreeClassifier)
+    """
 
 
-	def _gini_impurity(labels):
-		"""
-		Measures how often randomly chosen element from set would be incorrectly labeled if it were randomly labeled
-		using label distribution in subset.
-		Sum probability of each item being chosen times probability of mistake in categorizing item
+    self.d_features = samples.shape[1]
+    self.classes = np.unique(labels)
+    self.n_classes = self.classes.shape[0]
+
+    samples = self._sanitize_samples(samples)
+
+    self.root_node = self.root_node or self._fit(samples, labels)
+
+
+  def _sanitize_samples(self, samples):
+    for feature in samples[0]:
+      if type(feature)
+
+  # Function to take categorical feature and convert to binary values in features
+  def _vectorize_string(self, samples, column_num):
+    feature_values = list(set(samples[:,column_num]))
+    index = { key: val for val, key in enumerate(feature_values) }
+
+    vectors = []
+    for sample in samples:
+      vector = [0] * len(index)
+      vector[index[sample[column_num]]] = 1
+      vectors.append(vector)
+
+    samples = np.delete(samples, column_num, 1)
+    samples = np.append(samples, np.array(vectors), 1)
+    return samples
+
+
+  # function (feature_vector -> {true, false})
+  def split_compare(self, sample, (feature_index, threshold)):
+    return sample[feature_index] < threshold
+
+  def _fit(self, samples, labels, current_depth=1):
+    # Base cases
+    # No samples/labels
+    if len(labels) == 0:
+      return None
+
+    # all labels are same
+    #    return label same
+    elif (len(set(labels))) == 1:
+      return Leaf(labels[0])
+
+    # current_depth >= max_depth || len(samples) < 5
+    #   return leaf ndoe, where value=mode(current labels)
+    elif (current_depth >= self.max_depth) or (len(samples) < 5): #TODO: Change min # samples
+      most_common_label = Counter(labels).most_common(1)[0][0]
+      return Leaf(most_common_label)
+
+    # Recursive case
+    else:
+      gini_scores = {}
+      for feature_index in range(0, self.d_features):
+        for threshold in set(samples[:,feature_index]):
+          splitter = (feature_index, threshold)
+          num_samples = len(samples)
+
+          pass_index, fail_index = self._split(samples, splitter)
+          if (len(pass_index) > 0) and (len(fail_index) > 0):
+            gini_scores[splitter] = ((len(pass_index) / num_samples) * self._gini_impurity(labels[pass_index]) +
+                                     (len(fail_index) / num_samples) * self._gini_impurity(labels[fail_index]))
+
+      best_splitter = min(gini_scores)
+      pass_index, fail_index = self._split(samples, best_splitter)
+
+      return Node(
+        splitter = best_splitter,
+        left_child = self._fit(samples[pass_index,:], labels[pass_index], current_depth + 1),
+        right_child = self._fit(samples[fail_index,:], labels[fail_index], current_depth + 1)
+      )
+
+  def _gini_impurity(self, labels):
+    """
+    Measures how often randomly chosen element from set would be incorrectly labeled if it were randomly labeled
+    using label distribution in subset.
+    Sum probability of each item being chosen times probability of mistake in categorizing item
 
     Parameters:
       labels: labels of the samples we are testing gini impurity
 
-		Y -> set of all classes
-		sum for all y in Y
-		P(y) * (1 - P(y))
+    Y -> set of all classes
+    sum for all y in Y
+    P(y) * (1 - P(y))
 
-		aka prob. of choosing * prob. of mistake
-		"""
+    aka prob. of choosing * prob. of mistake
+    """
     # Aggregate counts
     count = Counter(labels)
     gini = 0
     for label in labels:
-      f = count(label) / len(labels)
+      f = count[label] / len(labels)
       gini += f * ( 1 - f)
     return gini
 
 
-  def _split(samples, split_test):
+  def _split(self, samples, splitter):
     """
     Split samples given a function that represents the feature split test
 
     Parameters:
       samples: the samples we are interested in splitting, usually probably Node.samples
-      split_test: function (feature_vector -> {true, false})
+      splitter: tuple of (feature_index, threshold)
 
     Returns:
       pass_index: index of samples that passed split_test
@@ -140,7 +189,7 @@ class DecisionTreeClassifier(self):
     pass_index = []
     fail_index = []
     for i, sample in enumerate(samples):
-      if split_test(sample):
+      if self.split_compare(sample, splitter):
         pass_index.append(i)
       else:
         fail_index.append(i)
