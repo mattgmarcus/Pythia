@@ -137,3 +137,33 @@ class Loan(db.Model):
 
     def __repr__(self):
         return '<id {}>'.format(self.id)
+
+
+class RejectedLoan(db.Model):
+    __tablename__ = "rejected_loans"
+
+    id = db.Column(db.Integer, primary_key=True)
+    loan_amount = db.Column(db.Integer)
+    title = db.Column(db.String)
+    debt_to_income = db.Column(db.Integer)
+    zip_code = db.Column(db.String)
+    address_state = db.Column(db.String)
+    employment_length = db.Column(db.Integer)
+    policy_code = db.Column(db.Integer)
+
+    def __init__(self, data):
+        self.loan_amount = int(float(data["Amount Requested"]))
+        self.title = data["Loan Title"]
+        self.debt_to_income = float(data["Debt-To-Income Ratio"][0:-1])
+        self.zip_code = data["Zip Code"]
+        self.address_state = data["State"]
+        self.employment_length = int(self.__parse_length(data["Employment Length"]))
+        self.policy_code = int(data["Policy Code"])
+
+    def __parse_length(self, length):
+        if length.find("<"):
+            return 0
+        elif length.find("+"):
+            return 10
+        else:
+            return length.split(" ")[0]
