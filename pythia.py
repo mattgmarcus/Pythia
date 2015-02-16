@@ -1,16 +1,41 @@
 #!/usr/bin/env python
+import argparse
 import numpy as np
 import scipy as sp
-from db_read import get_data
+from db_read import *
 #from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import Imputer
-from tree import *
+from tree import DecisionTreeClassifier
 from forest import RandomForestClassifier
 import sklearn.tree
 
-if __name__=="__main__":
+def accept(args):
+  feature_fields = [
+      # TODO insert fields here
+  ]
+
+  label_fields = []
+
+  rej_features, _ = get_data("rejected", feature_fields, label_fields)
+  rej_labels = [0] * len(rej_features) # label 0 for rejected
+
+  acc_features, _ = get_data("loans", feature_fields, label_fields)
+  acc_labels = [1] * len(acc_features) # label 1 for accepted
+
+  # TODO concatenate together and feed to classifier
+  features, labels = [], [] #TODO
+
+  train_features, test_features, train_labels, test_labels = \
+    train_test_split(features, labels, test_size=.3)
+
+  classifier = RandomForestClassifier()
+
+  classifier.fit(train_features, train_labels)
+  print classifier.score(test_features, test_labels)
+
+def quality(args):
   feature_fields = [
       #"loan_status",
       "loan_amount",
@@ -58,8 +83,10 @@ if __name__=="__main__":
   label_fields = [
       "loan_status"
   ]
-  features, labels = get_data(feature_fields=feature_fields,
-                              label_fields=label_fields,
+  features, labels = get_data("loans",
+                              feature_fields,
+                              label_fields,
+                              label_mapping=loan_status_labels
                               shuffle=True,
                               testing=True)
   #print features, labels
@@ -112,3 +139,17 @@ if __name__=="__main__":
   # print importances.shape
 
   print classifier.score(test_features, test_labels)
+
+if __name__=="__main__":
+  parser = argparse.ArgumentParser()
+  parser.add_argument("test", help="the test to run, one of: accept, grade, quality",
+                      type=str)
+  args = parser.parse_args()
+  print args.test
+  if args.test == "accept":
+    accept(args)
+  elif args.test == "quality":
+    quality(args)
+  else:
+    parser.print_help()
+

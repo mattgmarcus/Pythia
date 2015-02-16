@@ -12,8 +12,8 @@ def loan_status_labels(label):
   else:
     return 0
 
-def get_data(feature_fields=["purpose"], label_fields=["loan_status"], label_mapping=loan_status_labels,
-             shuffle=False, testing=False):
+def get_data(db, feature_fields, label_fields,
+             label_mapping=None, shuffle=False, testing=False):
   """
   Grabs information from the database and returns them as a multi-dimensional list of features and
   a list of labels
@@ -57,7 +57,8 @@ def get_data(feature_fields=["purpose"], label_fields=["loan_status"], label_map
     features.append(row[len(label_fields):])
     labels.append(row[:len(label_fields)])
 
-  labels = map(label_mapping, labels)
+  if label_mapping:
+    labels = map(label_mapping, labels)
 
   if shuffle:
     combined = zip(features, labels)
