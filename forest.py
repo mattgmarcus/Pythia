@@ -26,6 +26,10 @@ def bootstrap_build_tree(tree, X, Y):
 	return tree, random_indices
 
 def parallel_predict_tree(tree, X):
+	"""
+	Helper function for calling predict for each tree 
+	in parallel
+	"""
 
 	return tree.predict(X)
 
@@ -52,9 +56,6 @@ class RandomForestClassifier(self):
 		for i to n_estimators:
 			bootstrap_build_tree
 
-		Pass D into forest
-		Majority vote
-
 		"""
 
 		m_samples, self.d_features = X.shape
@@ -64,17 +65,19 @@ class RandomForestClassifier(self):
 		self.classes = np.unique(Y)
 		self.n_classes = classes.size
 
+		# Initialize all trees
 		self.trees = []
 		for i in range(self.n_trees):
 			tree = DecisionTreeClassifier()
 			self.trees.append(tree)
 
-		"""
-		Fit trees in parallel
-		"""
-
+		# Fit trees in parallel
 		self.trees, self.tree_indices = Parallel(n_jobs=self.n_jobs, backend="threading")\
 			(delayed(bootstrap_build_tree)(t, X, Y) for t in enumerate(self.trees))
+
+		self.get_oob_score(X, Y)
+
+		return self
 
 	# Assume input col is a col from an np array
 	def mode(col):
@@ -94,13 +97,6 @@ class RandomForestClassifier(self):
 		
 		# Get voted Y val for each col
 		return np.apply_along_axis(mode, 0, preds_np)
-
-		# voted_preds = []
-		# for i in range(num_col):
-		# 	common_preds = Counter(preds_np[:,i])
-		# 	voted_preds[i] = common_preds.most_common(1)[0][0]
-
-		# return voted_preds
 
 
 	def get_oob_score(self, X, Y):
@@ -125,22 +121,41 @@ class RandomForestClassifier(self):
 		# Get voted Y val for each col
 		voted_oob_preds = np.apply_along_axis(mode, 0, oob_preds_np)
 
-		# voted_oob_preds = []
-		# for i in range(num_col):
-		# 	common_oob_preds = Counter(oob_preds_np[:,i])
-		# 	voted_oob_preds[i] = common_oob_preds.most_common(1)[0][0]
-
 		# oob_score = # of times common_oob_pred_y != actual y / number of oob cases
 		for k in range(self.n_outputs):
 			# Some inputs will not have an oob pred so just skip them
 			if voted_oob_preds[k] == 0:
 				continue
 
-			oob_score += (voted_oob_preds[k] != Y[k])
+			# oob_score += (voted_oob_preds[k] != Y[k])
+			oob_score += abs(voted_oob_preds[k] - Y[k])
 
 		self.oob_score = oob_score / n_outputs
 
 		return self.oob_score
+
+	def test(self, X, Y):
+		"""
+		Returns mean accuracy on test data and
+		labels
+		"""
+
+		pred_y = self.predict(X)
+
+		return self.mean_accuracy(pred_y, Y)
+
+	def mean_accuracy(self, pred_y, correct_y):
+
+		difference = 0
+
+		for index, label in enumerate(pred_y):
+			difference += abs(label - correct_y[index])
+
+		return difference / pred_y.size
+
+
+	def mse(self, pred_y, correct_y):
+		return np.square(pred_y - correct_y) / pred_y.size
 
 	def feature_relevances(self):
 		pass
