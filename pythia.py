@@ -96,8 +96,8 @@ if __name__=="__main__":
 
   # classifier = DecisionTreeClassifier(10000)
 
-  classifier = RandomForestClassifier(n_trees=10,
-    n_jobs=1,
+  classifier = RandomForestClassifier(n_trees=30,
+    n_jobs=8,
     max_depth=10000)
 
   classifier.fit(train_features, train_labels)

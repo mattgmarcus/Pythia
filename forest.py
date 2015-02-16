@@ -26,6 +26,7 @@ def bootstrap_build_tree(tree, samples, labels):
 	tree.fit(samples[random_indices,:], labels[random_indices], sanitize=False)
 	tree.indices = random_indices
 
+	print "Finished growing tree"
 	return tree
 
 class RandomForestClassifier():
@@ -74,7 +75,6 @@ class RandomForestClassifier():
 
 
 	def predict(self, samples):
-
 		# Preds is a list where each element is a list of predicted values
 		# for each decision tree
 		predictions = Parallel(n_jobs=self.n_jobs, backend="threading")\
@@ -125,20 +125,15 @@ class RandomForestClassifier():
 		return self.oob_score
 
 
-	def score(self, samples, labels):
-		predicted_labels = self.predict(samples)
+	def score(self, test_samples, test_labels):
+		predicted_labels = self.predict(test_samples)
 
 		difference = 0.0
-		for index, label in enumerate(predicted_labels):
-			difference += abs(label - labels[index])
+		for pred, actual in zip(predicted_labels, test_labels):
+			difference += abs(pred - actual)
 
-		return difference / predicted_labels.size
+		return 1.0 - (difference / len(predicted_labels))
 
-
-	def mse(self, pred_y, correct_y):
-		return float(np.square(pred_y - correct_y)) / pred_y.size
 
 	def feature_relevances(self):
 		pass
-
-

@@ -245,8 +245,8 @@ class DecisionTreeClassifier():
 
   def score(self, test_samples, test_labels):
     predicted_labels = self.predict(test_samples)
-    difference = 0
-    for index, value in enumerate(predicted_labels):
-      difference += abs(predicted_labels[index] - test_labels[index])
+    difference = 0.0
+    for pred, actual in zip(predicted_labels, test_labels):
+      difference += abs(pred - actual)
 
-    return (1.0 - (float(difference) / len(test_labels)))
+    return 1.0 - (difference / len(test_labels))
