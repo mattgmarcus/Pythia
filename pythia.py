@@ -8,6 +8,7 @@ from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import Imputer
 from tree import *
 from forest import RandomForestClassifier
+import sklearn.tree
 
 if __name__=="__main__":
   feature_fields = [
@@ -95,8 +96,9 @@ if __name__=="__main__":
   #                                     max_features=None)
 
   # classifier = DecisionTreeClassifier(10000)
+  # classifier = sklearn.tree.DecisionTreeClassifier()
 
-  classifier = RandomForestClassifier(n_trees=30,
+  classifier = RandomForestClassifier(n_trees=100,
     n_jobs=8,
     max_depth=10000)
 

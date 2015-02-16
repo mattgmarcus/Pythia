@@ -3,6 +3,7 @@ from joblib import Parallel, delayed
 from collections import Counter
 import numpy as np
 from util import *
+import sklearn.tree
 
 # Borrowed from scikit because of an annoying bug
 def _parallel_helper(obj, methodname, *args, **kwargs):
@@ -23,7 +24,8 @@ def bootstrap_build_tree(tree, samples, labels):
 	n_samples = samples.shape[0]
 	random_indices = np.random.choice(n_samples, n_samples, replace=True)
 
-	tree.fit(samples[random_indices,:], labels[random_indices], sanitize=False)
+	tree.fit(samples[random_indices,:], labels[random_indices], sanitize=False, randomize="sqrt")
+	# tree.fit(samples[random_indices,:], labels[random_indices])
 	tree.indices = random_indices
 
 	print "Finished growing tree"
@@ -62,6 +64,7 @@ class RandomForestClassifier():
 		self.trees = []
 		for i in range(self.n_trees):
 			tree = DecisionTreeClassifier(self.max_depth)
+			# tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth, max_features="sqrt")
 			self.trees.append(tree)
 
 		# Fit trees in parallel
