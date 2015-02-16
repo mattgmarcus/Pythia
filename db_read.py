@@ -65,7 +65,7 @@ def get_data(feature_fields=["purpose"], label_fields=["loan_status"], label_map
     features, labels = zip(*combined)
 
   if testing:
-    half_sample_size = 500
+    half_sample_size = 1000
     num_charged_off = 0
     num_paid = 0
 

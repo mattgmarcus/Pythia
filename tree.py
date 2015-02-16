@@ -33,7 +33,7 @@ else
 
 class Node():
   def __init__(self, splitter, left_child, right_child):
-    self.splitter = splitter
+    self.splitter = splitter #(feature_index, threshold)
     self.left_child = left_child
     self.right_child = right_child
 
@@ -78,7 +78,7 @@ class DecisionTreeClassifier():
       self (DecisionTreeClassifier)
     """
 
-    # Todo: we'll have to figure out a way to take advantage of column indexing here.
+    # TODO: we'll have to figure out a way to take advantage of column indexing here.
     # May have to convert back to nparray as passed in later
     samples = self._sanitize_samples(samples)
     samples = np.array(samples)
@@ -92,7 +92,7 @@ class DecisionTreeClassifier():
   def _sanitize_samples(self, samples):
     samples = [dict(enumerate(sample)) for sample in samples]
     vect = DictVectorizer(sparse=False)
-    samples = vect.fit_transform(samples)
+    return vect.fit_transform(samples)
 
 
   # def _sanitize_samples(self, samples):
@@ -154,16 +154,16 @@ class DecisionTreeClassifier():
 
           pass_index, fail_index = self._split(samples, splitter)
           if (len(pass_index) > 0) and (len(fail_index) > 0):
-            gini_scores[splitter] = ((len(pass_index) / num_samples) * self._gini_impurity(labels[pass_index]) +
-                                     (len(fail_index) / num_samples) * self._gini_impurity(labels[fail_index]))
+            gini_scores[splitter] = ((len(pass_index) / num_samples) * self._gini_impurity([labels[i] for i in pass_index]) +
+                                     (len(fail_index) / num_samples) * self._gini_impurity([labels[i] for i in fail_index]))
 
       best_splitter = min(gini_scores)
       pass_index, fail_index = self._split(samples, best_splitter)
 
       return Node(
         splitter = best_splitter,
-        left_child = self._fit(samples[pass_index,:], labels[pass_index], current_depth + 1),
-        right_child = self._fit(samples[fail_index,:], labels[fail_index], current_depth + 1)
+        left_child = self._fit(samples[pass_index,:], [labels[i] for i in pass_index], current_depth + 1),
+        right_child = self._fit(samples[fail_index,:], [labels[i] for i in fail_index], current_depth + 1)
       )
 
   def _gini_impurity(self, labels):
@@ -211,3 +211,33 @@ class DecisionTreeClassifier():
         fail_index.append(i)
     return pass_index, fail_index
 
+
+  def predict(self, test_samples):
+    # TODO: we'll have to figure out a way to take advantage of column indexing here.
+    # May have to convert back to nparray as passed in later
+    samples = self._sanitize_samples(test_samples)
+    samples = np.array(samples)
+
+    return [self._predict(sample, self.root_node) for sample in samples]
+
+
+  def _predict(self, sample, current_node):
+    # Base Case: Node is a leaf
+    if isinstance(current_node, Leaf):
+      return current_node.value
+
+    else:
+      if self.split_compare(sample, current_node.splitter):
+        return self._predict(sample, current_node.left_child)
+      else:
+        return self._predict(sample, current_node.right_child)
+
+  def score(self, test_samples, test_labels):
+    predicted_labels = self.predict(test_samples)
+    print predicted_labels
+    print test_labels
+    difference = 0
+    for index, value in enumerate(predicted_labels):
+      difference += abs(predicted_labels[index] - test_labels[index])
+
+    return (1.0 - (float(difference) / len(test_labels)))

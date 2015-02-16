@@ -6,6 +6,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import Imputer
+from tree import *
 
 if __name__=="__main__":
   feature_fields = [
@@ -86,15 +87,17 @@ if __name__=="__main__":
   test_features: size (k, n) matrix of k samples of n features
   train_labels: size (k, 1) vector of the k training samples
   """
-  classifier = RandomForestClassifier(n_estimators=1000, \
-                                      n_jobs=-1, \
-                                      verbose=3,
-                                      oob_score=True,
-                                      max_features=None)
+  # classifier = RandomForestClassifier(n_estimators=1000, \
+  #                                     n_jobs=-1, \
+  #                                     verbose=3,
+  #                                     oob_score=True,
+  #                                     max_features=None)
+
+  classifier = DecisionTreeClassifier(10000)
 
   classifier.fit(train_features, train_labels)
-  importances = classifier.feature_importances_
-  print zip(vect.get_feature_names(), importances)
+  # importances = classifier.feature_importances_
+  # print zip(vect.get_feature_names(), importances)
   # print vect.feature_names_
   # print vect.vocabulary_
   # print vect.inverse_transform(importances)
