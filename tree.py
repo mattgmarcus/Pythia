@@ -2,7 +2,8 @@ import numpy as np
 import scipy as sp
 from collections import Counter
 from operator import itemgetter
-from sklearn.feature_extraction import DictVectorizer
+from util import *
+import math
 
 """
 Psuedocode for growing decision tree
@@ -63,7 +64,9 @@ class DecisionTreeClassifier():
     self.root_node = None
     self.max_depth = max_depth
 
-  def fit(self, samples, labels, sample_weight=None):
+    self.indices = None
+
+  def fit(self, samples, labels, sample_weight=None, sanitize=True, randomize="sqrt"):
     """
     Build decision tree using the training data
 
@@ -80,19 +83,16 @@ class DecisionTreeClassifier():
 
     # TODO: we'll have to figure out a way to take advantage of column indexing here.
     # May have to convert back to nparray as passed in later
-    samples = self._sanitize_samples(samples)
-    samples = np.array(samples)
+    if sanitize:
+      samples = sanitize_samples(samples)
+      samples = np.array(samples)
 
     self.d_features = samples.shape[1]
     self.classes = np.unique(labels)
     self.n_classes = self.classes.shape[0]
 
-    self.root_node = self.root_node or self._fit(samples, labels)
+    self.root_node = self.root_node or self._fit(samples, labels, randomize)
 
-  def _sanitize_samples(self, samples):
-    samples = [dict(enumerate(sample)) for sample in samples]
-    vect = DictVectorizer(sparse=False)
-    return vect.fit_transform(samples)
 
 
   # def _sanitize_samples(self, samples):
@@ -127,7 +127,7 @@ class DecisionTreeClassifier():
   def split_compare(self, sample, (feature_index, threshold)):
     return sample[feature_index] < threshold
 
-  def _fit(self, samples, labels, current_depth=1):
+  def _fit(self, samples, labels, randomize, current_depth=1):
     # Base cases
     # No samples/labels
     if len(labels) == 0:
@@ -147,23 +147,32 @@ class DecisionTreeClassifier():
     # Recursive case
     else:
       gini_scores = {}
-      for feature_index in range(0, self.d_features):
-        for threshold in set(samples[:,feature_index]):
-          splitter = (feature_index, threshold)
-          num_samples = len(samples)
+      while len(gini_scores) == 0:
+        if randomize == "sqrt":
+          d = self.d_features
+          num_features = math.floor(math.sqrt(d))
+          feature_indices = np.random.choice(d, num_features, replace=False)
+        else:
+          feature_indices = range(self.d_features)
 
-          pass_index, fail_index = self._split(samples, splitter)
-          if (len(pass_index) > 0) and (len(fail_index) > 0):
-            gini_scores[splitter] = ((len(pass_index) / num_samples) * self._gini_impurity([labels[i] for i in pass_index]) +
-                                     (len(fail_index) / num_samples) * self._gini_impurity([labels[i] for i in fail_index]))
+        for feature_index in feature_indices:
+          for threshold in set(samples[:,feature_index]):
+            splitter = (feature_index, threshold)
+            num_samples = float(len(samples))
+
+            pass_index, fail_index = self._split(samples, splitter)
+
+            if (len(pass_index) > 0) and (len(fail_index) > 0):
+              gini_scores[splitter] = ((len(pass_index) / num_samples) * self._gini_impurity([labels[i] for i in pass_index]) +
+                                       (len(fail_index) / num_samples) * self._gini_impurity([labels[i] for i in fail_index]))
 
       best_splitter = min(gini_scores)
       pass_index, fail_index = self._split(samples, best_splitter)
 
       return Node(
         splitter = best_splitter,
-        left_child = self._fit(samples[pass_index,:], [labels[i] for i in pass_index], current_depth + 1),
-        right_child = self._fit(samples[fail_index,:], [labels[i] for i in fail_index], current_depth + 1)
+        left_child = self._fit(samples[pass_index,:], [labels[i] for i in pass_index], randomize, current_depth + 1),
+        right_child = self._fit(samples[fail_index,:], [labels[i] for i in fail_index], randomize, current_depth + 1)
       )
 
   def _gini_impurity(self, labels):
@@ -181,12 +190,14 @@ class DecisionTreeClassifier():
 
     aka prob. of choosing * prob. of mistake
     """
+
     # Aggregate counts
     count = Counter(labels)
-    gini = 0
-    for label in labels:
-      f = count[label] / len(labels)
-      gini += f * ( 1 - f)
+    gini = 0.0
+    for label in set(labels):
+      f = float(count[label]) / len(labels)
+      gini += f * ( 1.0 - f)
+
     return gini
 
 
@@ -215,7 +226,7 @@ class DecisionTreeClassifier():
   def predict(self, test_samples):
     # TODO: we'll have to figure out a way to take advantage of column indexing here.
     # May have to convert back to nparray as passed in later
-    samples = self._sanitize_samples(test_samples)
+    samples = sanitize_samples(test_samples)
     samples = np.array(samples)
 
     return [self._predict(sample, self.root_node) for sample in samples]
@@ -234,8 +245,6 @@ class DecisionTreeClassifier():
 
   def score(self, test_samples, test_labels):
     predicted_labels = self.predict(test_samples)
-    print predicted_labels
-    print test_labels
     difference = 0
     for index, value in enumerate(predicted_labels):
       difference += abs(predicted_labels[index] - test_labels[index])

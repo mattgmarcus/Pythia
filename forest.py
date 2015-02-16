@@ -2,8 +2,13 @@ from tree import DecisionTreeClassifier
 from joblib import Parallel, delayed
 from collections import Counter
 import numpy as np
+from util import *
 
-def bootstrap_build_tree(tree, X, Y):
+# Borrowed from scikit because of an annoying bug
+def _parallel_helper(obj, methodname, *args, **kwargs):
+	return getattr(obj, methodname)(*args, **kwargs)
+
+def bootstrap_build_tree(tree, samples, labels):
 	"""
 	Generate random indices by sampling with replacement and
 	then generate random subset from training set using those indices
@@ -15,41 +20,29 @@ def bootstrap_build_tree(tree, X, Y):
 	Return:
 	Fitted tree (DecisionTreeClassifier)
 	"""
-	n_samples = X.shape[0]
-
+	n_samples = samples.shape[0]
 	random_indices = np.random.choice(n_samples, n_samples, replace=True)
-	random_subset = X[random_indices,:]
-	random_subset_labels = Y[random_indices]
 
-	tree.fit(random_subset, random_subset_labels)
+	tree.fit(samples[random_indices,:], labels[random_indices], sanitize=False)
+	tree.indices = random_indices
 
-	return tree, random_indices
+	return tree
 
-def parallel_predict_tree(tree, X):
-	"""
-	Helper function for calling predict for each tree 
-	in parallel
-	"""
-
-	return tree.predict(X)
-
-class RandomForestClassifier(self):
-	def __init__(self, n_trees, n_jobs):
+class RandomForestClassifier():
+	def __init__(self, n_trees, n_jobs, max_depth=10000):
 		self.n_trees = n_trees
 		self.n_jobs = n_jobs
 		self.trees = None
-		self.tree_indices = None
 		self.oob_score = None
-		self.n_outputs = None
-		self.classes = None
-		self.n_classes = None
 		self.d_features = None
 		self.feature_importances = None
 
-	def fit(self, X, Y):
+		self.max_depth = max_depth
+
+	def fit(self, samples, labels):
 		"""
 		Create forest of trees from training set
-		
+
 		Given training set D
 		n_trees = # of trees
 		in parallel:
@@ -58,61 +51,57 @@ class RandomForestClassifier(self):
 
 		"""
 
-		m_samples, self.d_features = X.shape
+		samples = sanitize_samples(samples)
+		samples = np.array(samples)
+		labels = np.array(labels)
 
-		self.n_outputs = Y.shape[0]
-
-		self.classes = np.unique(Y)
-		self.n_classes = classes.size
+		self.d_features = samples.shape[1]
 
 		# Initialize all trees
 		self.trees = []
 		for i in range(self.n_trees):
-			tree = DecisionTreeClassifier()
+			tree = DecisionTreeClassifier(self.max_depth)
 			self.trees.append(tree)
 
 		# Fit trees in parallel
-		self.trees, self.tree_indices = Parallel(n_jobs=self.n_jobs, backend="threading")\
-			(delayed(bootstrap_build_tree)(t, X, Y) for t in enumerate(self.trees))
+		self.trees = Parallel(n_jobs=self.n_jobs, backend="threading")\
+			(delayed(bootstrap_build_tree)(t, samples, labels) for t in self.trees)
+			# (delayed(self._parallel_helper)(self, "bootstrap_build_tree", t, samples, labels) for t in self.trees)
 
-		self.get_oob_score(X, Y)
+		# self.get_oob_score(samples, labels)
 
 		return self
 
-	# Assume input col is a col from an np array
-	def mode(col):
-		common = Counter(col)
-		return common.most_common(1)[0][0]
 
-	def predict(self, X):
+	def predict(self, samples):
 
 		# Preds is a list where each element is a list of predicted values
 		# for each decision tree
-		preds = Parallel(n_jobs=self.n_jobs, backend="threading")\
-			(delayed(parallel_predict_tree)(t, X) for t in enumerate(self.trees))
+		predictions = Parallel(n_jobs=self.n_jobs, backend="threading")\
+			(delayed(_parallel_helper)(t, "predict", samples) for t in self.trees)
 
 		# Convert preds into a np array
-		preds_np = np.array(preds)
+		predictions = np.array(predictions)
 		# num_col = preds_np.shape[1]
-		
+
 		# Get voted Y val for each col
-		return np.apply_along_axis(mode, 0, preds_np)
+		return np.apply_along_axis(mode, 0, predictions)
 
 
-	def get_oob_score(self, X, Y):
-		
+	def get_oob_score(self, samples, labels):
+
 		# oob_preds is a list where each element is a list of predicted values
 		oob_preds = []
 		oob_score = 0.0
 
-		all_sample_indices = X.shape[0]
-		for i in self.n_trees:
+		all_sample_indices = np.array(range(samples.shape[0]))
+		for i in range(self.n_trees):
 			mask = np.ones(len(all_sample_indices), dtype=bool)
-			mask[self.tree_indices[i]] = False
+			mask[self.trees[i].indices] = False
 			left_out_indices = all_sample_indices[mask]
 
 			# This is a list of predicted values
-			oobs_preds[i] = self.trees[i].predict(X[left_out_indices,:])
+			oob_preds.append(self.trees[i].predict(samples[left_out_indices,:]))
 
 		# Convert oob_preds into a np array
 		oob_preds_np = np.array(oob_preds)
@@ -122,40 +111,32 @@ class RandomForestClassifier(self):
 		voted_oob_preds = np.apply_along_axis(mode, 0, oob_preds_np)
 
 		# oob_score = # of times common_oob_pred_y != actual y / number of oob cases
-		for k in range(self.n_outputs):
+		n_outputs = labels.shape[0]
+		for k in range(n_outputs):
 			# Some inputs will not have an oob pred so just skip them
 			if voted_oob_preds[k] == 0:
 				continue
 
 			# oob_score += (voted_oob_preds[k] != Y[k])
-			oob_score += abs(voted_oob_preds[k] - Y[k])
+			oob_score += abs(voted_oob_preds[k] - labels[k])
 
 		self.oob_score = oob_score / n_outputs
 
 		return self.oob_score
 
-	def test(self, X, Y):
-		"""
-		Returns mean accuracy on test data and
-		labels
-		"""
 
-		pred_y = self.predict(X)
+	def score(self, samples, labels):
+		predicted_labels = self.predict(samples)
 
-		return self.mean_accuracy(pred_y, Y)
+		difference = 0.0
+		for index, label in enumerate(predicted_labels):
+			difference += abs(label - labels[index])
 
-	def mean_accuracy(self, pred_y, correct_y):
-
-		difference = 0
-
-		for index, label in enumerate(pred_y):
-			difference += abs(label - correct_y[index])
-
-		return difference / pred_y.size
+		return difference / predicted_labels.size
 
 
 	def mse(self, pred_y, correct_y):
-		return np.square(pred_y - correct_y) / pred_y.size
+		return float(np.square(pred_y - correct_y)) / pred_y.size
 
 	def feature_relevances(self):
 		pass

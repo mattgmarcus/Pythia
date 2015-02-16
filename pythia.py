@@ -2,11 +2,12 @@
 import numpy as np
 import scipy as sp
 from db_read import get_data
-from sklearn.ensemble import RandomForestClassifier
+#from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import Imputer
 from tree import *
+from forest import RandomForestClassifier
 
 if __name__=="__main__":
   feature_fields = [
@@ -23,9 +24,9 @@ if __name__=="__main__":
       "employment_length",
       "home_ownership",
       "annual_income",
-      "is_income_verified",
-      "payment_plan",
-      "purpose",
+      #"is_income_verified",
+      #"payment_plan",
+      #"purpose",
       #"zip_code",
       #"address_state",
       "debt_to_income",
@@ -50,7 +51,7 @@ if __name__=="__main__":
       #"last_payment_amount",
       "collections_12_mths",
       "mths_since_last_major_derog",
-      "policy_code",
+      #"policy_code",
       "mths_since_last_record"
   ]
   label_fields = [
@@ -93,7 +94,11 @@ if __name__=="__main__":
   #                                     oob_score=True,
   #                                     max_features=None)
 
-  classifier = DecisionTreeClassifier(10000)
+  # classifier = DecisionTreeClassifier(10000)
+
+  classifier = RandomForestClassifier(n_trees=10,
+    n_jobs=1,
+    max_depth=10000)
 
   classifier.fit(train_features, train_labels)
   # importances = classifier.feature_importances_
