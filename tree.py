@@ -141,8 +141,6 @@ class DecisionTreeClassifier():
     # current_depth >= max_depth || len(samples) < 5
     #   return leaf node, where value=mode(current labels)
     elif (current_depth >= self.max_depth) or (len(samples) < 5): #TODO: Change min # samples
-      print current_depth
-
       most_common_label = Counter(labels).most_common(1)[0][0]
       return Leaf(most_common_label)
 

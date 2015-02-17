@@ -12,7 +12,7 @@ def loan_status_labels(label):
   else:
     return 0
 
-def get_data(db, feature_fields, label_fields,
+def get_data(db, feature_fields=None, label_fields=None, sql=None,
              label_mapping=None, shuffle=False, testing=False):
   """
   Grabs information from the database and returns them as a multi-dimensional list of features and
@@ -42,49 +42,25 @@ def get_data(db, feature_fields, label_fields,
 
   """
 
-  fields = ','.join(label_fields) + ',' + ','.join(feature_fields)
+  #fields = ','.join(label_fields) + ',' + ','.join(feature_fields)
   meta = MetaData()
   engine = create_engine(os.environ['DATABASE_URL'], isolation_level="READ UNCOMMITTED")
   # TODO need to make the WHERE a parameter?
-  sql = text("select %s from loans where loan_status in ('Charged Off', 'Fully Paid')" % fields)
+  #sql = text("select %s from %s where loan_status in ('Charged Off', 'Fully Paid')" % (fields, db))
+
   result = engine.connect().execute(sql)
-  loans = Table('loans', meta, autoload=True, autoload_with=engine)
+
 
   features = []
   labels = []
 
   for row in result:
-    features.append(row[len(label_fields):])
-    labels.append(row[:len(label_fields)])
-
-  if label_mapping:
-    labels = map(label_mapping, labels)
+    features.append(row)
 
   if shuffle:
-    combined = zip(features, labels)
-    random.shuffle(combined)
-    features, labels = zip(*combined)
+    random.shuffle(features)
 
-  if testing:
-    half_sample_size = 500
-    num_charged_off = 0
-    num_paid = 0
 
-    features_prime = []
-    labels_prime = []
-    for index, label in enumerate(labels):
-      if (label == 1) and (num_paid < half_sample_size):
-        features_prime.append(features[index])
-        labels_prime.append(label)
-        num_paid += 1
-      elif (label == 0) and (num_charged_off < half_sample_size):
-        features_prime.append(features[index])
-        labels_prime.append(label)
-        num_charged_off += 1
-      elif (num_paid >= half_sample_size) and (num_charged_off >= half_sample_size):
-        break
-    features = features_prime
-    labels = labels_prime
-
-  return features, labels
+  sample_size = 10000
+  return features[:sample_size]
 

@@ -3,37 +3,61 @@ import argparse
 import numpy as np
 import scipy as sp
 from db_read import *
-#from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import Imputer
 from tree import DecisionTreeClassifier
-from forest import RandomForestClassifier
+# from forest import RandomForestClassifier
 import sklearn.tree
 
 def accept(args):
   feature_fields = [
-      # TODO insert fields here
+      "loan_amount",
+      "debt_to_income",
+      "zip_code",
+      "address_state",
+      "employment_length",
+      # "policy_code"
   ]
+  feature_string = ','.join(feature_fields)
 
   label_fields = []
 
-  rej_features, _ = get_data("rejected", feature_fields, label_fields)
+  rej_sql = text("select %s from rejected_loans" % feature_string)
+  rej_features = get_data("rejected", sql=rej_sql)
   rej_labels = [0] * len(rej_features) # label 0 for rejected
 
-  acc_features, _ = get_data("loans", feature_fields, label_fields)
+  acc_sql = text("select %s from loans" % feature_string)
+  acc_features = get_data("loans", sql=acc_sql)
   acc_labels = [1] * len(acc_features) # label 1 for accepted
 
   # TODO concatenate together and feed to classifier
-  features, labels = [], [] #TODO
+  features, labels = rej_features + acc_features, rej_labels + acc_labels
+
+  features = [dict(enumerate(feature)) for feature in features]
+  vect = DictVectorizer(sparse=False)
+  #print features
+  features = vect.fit_transform(features)
+  #print features.shape
 
   train_features, test_features, train_labels, test_labels = \
     train_test_split(features, labels, test_size=.3)
 
-  classifier = RandomForestClassifier()
+  # classifier = RandomForestClassifier(n_trees=50,
+  #   n_jobs=8,
+  #   max_depth=10000)
+
+  classifier = RandomForestClassifier(n_estimators=1000, \
+                                      n_jobs=-1, \
+                                      verbose=3,
+                                      oob_score=True,
+                                      max_features=None)
 
   classifier.fit(train_features, train_labels)
   print classifier.score(test_features, test_labels)
+  # importances = classifier.feature_importances_
+  # print zip(vect.get_feature_names(), importances)
 
 def quality(args):
   feature_fields = [
@@ -86,7 +110,7 @@ def quality(args):
   features, labels = get_data("loans",
                               feature_fields,
                               label_fields,
-                              label_mapping=loan_status_labels
+                              label_mapping=loan_status_labels,
                               shuffle=True,
                               testing=True)
   #print features, labels
