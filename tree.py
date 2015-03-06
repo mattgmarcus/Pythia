@@ -57,13 +57,13 @@ class Leaf(Node):
 
 class DecisionTreeClassifier():
   """Decision Tree using CART method"""
-  def __init__(self, max_depth):
+  def __init__(self, max_depth, use_posterior=False):
     self.classes = None
     self.n_classes = None
     self.d_features = None
     self.feature_relevances = None
     self.class_weights = None
-
+    self.use_posterior = use_posterior
     self.root_node = None
     self.max_depth = max_depth
 
@@ -237,7 +237,7 @@ class DecisionTreeClassifier():
   def _predict(self, sample, current_node):
     # Base Case: Node is a leaf
     if isinstance(current_node, Leaf):
-      return current_node.value, current_node.posterior
+      return current_node.posterior if self.use_posterior else current_node.value
 
     else:
       if self.split_compare(sample, current_node.splitter):

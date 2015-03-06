@@ -63,7 +63,7 @@ class RandomForestClassifier():
     # Initialize all trees
     self.trees = []
     for i in range(self.n_trees):
-      tree = DecisionTreeClassifier(self.max_depth)
+      tree = DecisionTreeClassifier(self.max_depth, use_posterior=True)
       # tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth, max_features="sqrt")
       self.trees.append(tree)
 
@@ -87,7 +87,7 @@ class RandomForestClassifier():
     predictions = np.array(predictions)
     # num_col = preds_np.shape[1]
 
-    posteriors = np.apply_along_axis(sum_posteriors, 0, predictions)
+    posteriors = np.apply_along_axis(sum_posterior, 0, predictions)
     k = self.n_trees / 2
     pred_labels = np.array([1 if posterior > k else 0 for posterior in posteriors])
 

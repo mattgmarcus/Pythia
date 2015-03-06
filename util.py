@@ -8,10 +8,8 @@ def sanitize_samples(samples):
 
 # Assume input col is a col from an np array
 def mode(col):
-  pred_labels, _ = zip(*col)
-  common = Counter(pred_labels)
+  common = Counter(col)
   return common.most_common(1)[0][0]
 
 def sum_posterior(col):
-  _, posteriors = zip(*col)
-  return sum(posteriors)
+  return sum(col)

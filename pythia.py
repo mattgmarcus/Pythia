@@ -25,11 +25,11 @@ def accept(args):
   label_fields = []
 
   rej_sql = text("select %s from rejected_loans" % feature_string)
-  rej_features = get_data("rejected", sql=rej_sql)
+  rej_features, _ = get_data("rejected", sql=rej_sql, shuffle=True, testing=True)
   rej_labels = [0] * len(rej_features) # label 0 for rejected
 
   acc_sql = text("select %s from loans" % feature_string)
-  acc_features = get_data("loans", sql=acc_sql)
+  acc_features, _ = get_data("loans", sql=acc_sql, shuffle=True, testing=True)
   acc_labels = [1] * len(acc_features) # label 1 for accepted
 
   # TODO concatenate together and feed to classifier
@@ -44,7 +44,7 @@ def accept(args):
   train_features, test_features, train_labels, test_labels = \
     train_test_split(features, labels, test_size=.3)
 
-  classifier = RandomForestClassifier(n_trees=50,
+  classifier = RandomForestClassifier(n_trees=16,
     n_jobs=8,
     max_depth=10000)
 
@@ -58,6 +58,15 @@ def accept(args):
   print classifier.score(test_features, test_labels)
   # importances = classifier.feature_importances_
   # print zip(vect.get_feature_names(), importances)
+
+def loan_status_labels(label):
+  if label[0] == "Fully Paid":
+    return 1
+  else:
+    return 0
+
+def remove_loan_status(features):
+  return features[:1]
 
 def quality(args):
   feature_fields = [
@@ -107,10 +116,12 @@ def quality(args):
   label_fields = [
       "loan_status"
   ]
+  feature_string = ','.join(label_fields) + ',' + ','.join(feature_fields)
+  sql = text("select %s from loans" % feature_string)
   features, labels = get_data("loans",
-                              feature_fields,
-                              label_fields,
+                              sql=sql,
                               label_mapping=loan_status_labels,
+                              features_processing=remove_loan_status,
                               shuffle=True,
                               testing=True)
   #print features, labels
