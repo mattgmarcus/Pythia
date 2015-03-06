@@ -32,14 +32,14 @@ def bootstrap_build_tree(tree, samples, labels):
   return tree
 
 class RandomForestClassifier():
-  def __init__(self, n_trees, n_jobs, max_depth=10000):
+  def __init__(self, n_trees, n_jobs, max_depth=10000, use_posterior=False):
     self.n_trees = n_trees
     self.n_jobs = n_jobs
     self.trees = None
     self.oob_score = None
     self.d_features = None
     self.feature_importances = None
-
+    self.use_posterior = use_posterior
     self.max_depth = max_depth
 
   def fit(self, samples, labels):
@@ -63,7 +63,7 @@ class RandomForestClassifier():
     # Initialize all trees
     self.trees = []
     for i in range(self.n_trees):
-      tree = DecisionTreeClassifier(self.max_depth, use_posterior=True)
+      tree = DecisionTreeClassifier(self.max_depth, use_posterior=self.use_posterior)
       # tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth, max_features="sqrt")
       self.trees.append(tree)
 
