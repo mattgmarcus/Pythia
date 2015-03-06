@@ -3,13 +3,13 @@ import argparse
 import numpy as np
 import scipy as sp
 from db_read import *
-from sklearn.ensemble import RandomForestClassifier
+#from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import Imputer
 from tree import DecisionTreeClassifier
-# from forest import RandomForestClassifier
-import sklearn.tree
+from forest import RandomForestClassifier
+#import sklearn.tree
 
 def accept(args):
   feature_fields = [
@@ -44,15 +44,15 @@ def accept(args):
   train_features, test_features, train_labels, test_labels = \
     train_test_split(features, labels, test_size=.3)
 
-  # classifier = RandomForestClassifier(n_trees=50,
-  #   n_jobs=8,
-  #   max_depth=10000)
+  classifier = RandomForestClassifier(n_trees=50,
+    n_jobs=8,
+    max_depth=10000)
 
-  classifier = RandomForestClassifier(n_estimators=1000, \
-                                      n_jobs=-1, \
-                                      verbose=3,
-                                      oob_score=True,
-                                      max_features=None)
+  # classifier = RandomForestClassifier(n_estimators=1000, \
+  #                                     n_jobs=-1, \
+  #                                     verbose=3,
+  #                                     oob_score=True,
+  #                                     max_features=None)
 
   classifier.fit(train_features, train_labels)
   print classifier.score(test_features, test_labels)

@@ -61,6 +61,6 @@ def get_data(db, feature_fields=None, label_fields=None, sql=None,
     random.shuffle(features)
 
 
-  sample_size = 10000
+  sample_size = 1000
   return features[:sample_size]
 

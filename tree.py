@@ -45,8 +45,11 @@ class Node():
 
 
 class Leaf(Node):
-  def __init__(self, value):
-    self.value = value
+  def __init__(self, posterior_label, labels):
+    counts = Counter(labels)
+    most_common_label = counts.most_common(1)[0][0]
+    self.value = most_common_label
+    self.posterior = float(counts[posterior_label]) / len(labels)
 
   def __str__(self):
     return self.value
@@ -127,7 +130,7 @@ class DecisionTreeClassifier():
   def split_compare(self, sample, (feature_index, threshold)):
     return sample[feature_index] < threshold
 
-  def _fit(self, samples, labels, randomize, current_depth=1):
+  def _fit(self, samples, labels, randomize, current_depth=1, posterior_label=1):
     # Base cases
     # No samples/labels
     if len(labels) == 0:
@@ -136,13 +139,12 @@ class DecisionTreeClassifier():
     # all labels are same
     #    return label same
     elif (len(set(labels))) == 1:
-      return Leaf(labels[0])
+      return Leaf(posterior_label, labels)
 
     # current_depth >= max_depth || len(samples) < 5
     #   return leaf node, where value=mode(current labels)
-    elif (current_depth >= self.max_depth) or (len(samples) < 5): #TODO: Change min # samples
-      most_common_label = Counter(labels).most_common(1)[0][0]
-      return Leaf(most_common_label)
+    elif (current_depth >= self.max_depth) or (len(samples) < 10): #TODO: Change min # samples
+      return Leaf(posterior_label, labels)
 
     # Recursive case
     else:
@@ -235,7 +237,7 @@ class DecisionTreeClassifier():
   def _predict(self, sample, current_node):
     # Base Case: Node is a leaf
     if isinstance(current_node, Leaf):
-      return current_node.value
+      return current_node.value, current_node.posterior
 
     else:
       if self.split_compare(sample, current_node.splitter):
