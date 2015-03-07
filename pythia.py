@@ -4,11 +4,12 @@ import numpy as np
 import scipy as sp
 from db_read import *
 #from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import RandomForestRegressor
+# from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import Imputer
 from tree import DecisionTreeClassifier
+from tree import DecisionTreeRegressor
 from forest import RandomForestClassifier
 #import sklearn.tree
 
@@ -174,9 +175,9 @@ def grade(args):
   # classifier = DecisionTreeClassifier(10000)
   # classifier = sklearn.tree.DecisionTreeClassifier()
 
-  # classifier = RandomForestRegressor(n_trees=args.numtrees,
-  #   n_jobs=8,
-  #   max_depth=10000)
+  classifier = RandomForestRegressor(n_trees=args.numtrees,
+    n_jobs=8,
+    max_depth=10000)
 
   classifier.fit(train_features, train_labels)
   importances = classifier.feature_importances_

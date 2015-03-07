@@ -32,7 +32,7 @@ else
 
 """
 
-class Node():
+class Node(object):
   def __init__(self, splitter, left_child, right_child):
     self.splitter = splitter #(feature_index, threshold)
     self.left_child = left_child
@@ -45,14 +45,25 @@ class Node():
 
 
 class Leaf(Node):
+  def __init__(self, value):
+    self.value = value
+
+  def __str__(self):
+    return self.value
+
+
+class LeafClassifier(Leaf):
   def __init__(self, posterior_label, labels):
     counts = Counter(labels)
     most_common_label = counts.most_common(1)[0][0]
     self.value = most_common_label
     self.posterior = float(counts[posterior_label]) / len(labels)
 
-  def __str__(self):
-    return self.value
+
+class LeafRegressor(Leaf):
+  def __init__(self, labels):
+    self.unrounded_value = float(math.sum(labels)) / len(labels)
+    self.value = math.round(self.unrounded_value)
 
 
 class DecisionTree(object):
@@ -129,7 +140,54 @@ class DecisionTree(object):
   def split_compare(self, sample, (feature_index, threshold)):
     return sample[feature_index] < threshold
 
-  def _fit(self):
+  def _fit(self, samples, labels, randomize, current_depth=1, posterior_label=None):
+    # Base cases
+    # No samples/labels
+    if len(labels) == 0:
+      return None
+
+    # all labels are same
+    #    return label same
+    elif (len(set(labels))) == 1:
+      return self.make_leaf(labels, posterior_label)
+
+    # current_depth >= max_depth || len(samples) < 5
+    #   return leaf node, where value=mode(current labels)
+    elif (current_depth >= self.max_depth) or (len(samples) < 10): #TODO: Change min # samples
+      return self.make_leaf(labels, posterior_label)
+
+    # Recursive case
+    else:
+      errors = {}
+      while len(errors) == 0:
+        if randomize == "sqrt":
+          d = self.d_features
+          num_features = math.floor(math.sqrt(d))
+          feature_indices = np.random.choice(d, num_features, replace=False)
+        else:
+          feature_indices = range(self.d_features)
+
+        for feature_index in feature_indices:
+          for threshold in set(samples[:,feature_index]):
+            splitter = (feature_index, threshold)
+            num_samples = float(len(samples))
+
+            pass_index, fail_index = self._split(samples, splitter)
+
+            if (len(pass_index) > 0) and (len(fail_index) > 0):
+              errors[splitter] = ((len(pass_index) / num_samples) * self.get_error([labels[i] for i in pass_index]) +
+                                       (len(fail_index) / num_samples) * self.get_error([labels[i] for i in fail_index]))
+
+      best_splitter = min(errors)
+      pass_index, fail_index = self._split(samples, best_splitter)
+
+      return Node(
+        splitter = best_splitter,
+        left_child = self._fit(samples[pass_index,:], [labels[i] for i in pass_index], randomize, current_depth + 1),
+        right_child = self._fit(samples[fail_index,:], [labels[i] for i in fail_index], randomize, current_depth + 1)
+      )
+
+  def get_error(self, labels):
     pass
 
   def _split(self, samples, splitter):
@@ -189,53 +247,6 @@ class DecisionTreeClassifier(DecisionTree):
     super(DecisionTreeClassifier, self).__init__(max_depth)
     self.use_posterior = use_posterior
 
-  def _fit(self, samples, labels, randomize, current_depth=1, posterior_label=1):
-    # Base cases
-    # No samples/labels
-    if len(labels) == 0:
-      return None
-
-    # all labels are same
-    #    return label same
-    elif (len(set(labels))) == 1:
-      return Leaf(posterior_label, labels)
-
-    # current_depth >= max_depth || len(samples) < 5
-    #   return leaf node, where value=mode(current labels)
-    elif (current_depth >= self.max_depth) or (len(samples) < 10): #TODO: Change min # samples
-      return Leaf(posterior_label, labels)
-
-    # Recursive case
-    else:
-      gini_scores = {}
-      while len(gini_scores) == 0:
-        if randomize == "sqrt":
-          d = self.d_features
-          num_features = math.floor(math.sqrt(d))
-          feature_indices = np.random.choice(d, num_features, replace=False)
-        else:
-          feature_indices = range(self.d_features)
-
-        for feature_index in feature_indices:
-          for threshold in set(samples[:,feature_index]):
-            splitter = (feature_index, threshold)
-            num_samples = float(len(samples))
-
-            pass_index, fail_index = self._split(samples, splitter)
-
-            if (len(pass_index) > 0) and (len(fail_index) > 0):
-              gini_scores[splitter] = ((len(pass_index) / num_samples) * self._gini_impurity([labels[i] for i in pass_index]) +
-                                       (len(fail_index) / num_samples) * self._gini_impurity([labels[i] for i in fail_index]))
-
-      best_splitter = min(gini_scores)
-      pass_index, fail_index = self._split(samples, best_splitter)
-
-      return Node(
-        splitter = best_splitter,
-        left_child = self._fit(samples[pass_index,:], [labels[i] for i in pass_index], randomize, current_depth + 1),
-        right_child = self._fit(samples[fail_index,:], [labels[i] for i in fail_index], randomize, current_depth + 1)
-      )
-
   def _gini_impurity(self, labels):
     """
     Measures how often randomly chosen element from set would be incorrectly labeled if it were randomly labeled
@@ -263,4 +274,28 @@ class DecisionTreeClassifier(DecisionTree):
 
   def get_leaf_value(self, current_node):
     return current_node.posterior if self.use_posterior else current_node.value
+
+  def make_leaf(self, labels, posterior_label=1):
+    return LeafClassifier(posterior_label, labels)
+
+  def get_error(self, labels):
+    return self._gini_impurity(labels)
+
+
+class DecisionTreeRegressor(DecisionTree):
+  def __init__(self, max_depth):
+    super(DecisionTreeClassifier, self).__init__(max_depth)
+
+  def get_error(self, labels):
+    return self._ssd_error(labels)
+
+  def _ssd_error(self, labels):
+    mean = float(math.sum(labels)) / len(labels)
+    return sum([(label - mean)^2 for label in labels])
+
+  def get_leaf_value(self, current_node):
+    return current_node.value
+
+  def make_leaf(self, labels):
+    return LeafRegressor(labels)
 
