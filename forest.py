@@ -109,7 +109,7 @@ class RandomForestClassifier():
       mask = np.ones(len(all_sample_indices), dtype=bool)
       mask[self.trees[i].indices] = False
       left_out_indices = all_sample_indices[mask]
-      oob_set += list(set(left_out_indices) - set(oob_set))
+      # oob_set += list(set(left_out_indices) - set(oob_set))
       predictions[i, left_out_indices] = self.trees[i].predict(samples[left_out_indices,:])
 
     prediction_mask = np.all(np.equal(predictions, 0), axis=0)
