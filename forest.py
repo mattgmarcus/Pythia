@@ -97,51 +97,31 @@ class RandomForestClassifier():
 
   def get_oob_score(self, samples, labels):
 
-    # oob_preds is a list where each element is a list of predicted values
-    oob_preds = []
-    pred_labels = []
-    oob_score = 0.0
-
     n_outputs = labels.shape[0]
 
+    oob_score = 0.0
+
+    predictions = np.zeros((self.n_trees, n_outputs))
+
     all_sample_indices = np.array(range(samples.shape[0]))
-    k = self.n_trees / 2;
+    # oob_set = []
     for i in range(self.n_trees):
       mask = np.ones(len(all_sample_indices), dtype=bool)
       mask[self.trees[i].indices] = False
       left_out_indices = all_sample_indices[mask]
+      oob_set += list(set(left_out_indices) - set(oob_set))
+      predictions[i, left_out_indices] = self.trees[i].predict(samples[left_out_indices,:])
 
-      # This is a list of predicted values
-      oob_preds.append(self.trees[i].predict(samples[left_out_indices,:]))
-      pred_labels.append(np.array([1 if oob_posterior > k else 0 for oob_posterior in oob_preds[i]]))
+    prediction_mask = np.all(np.equal(predictions, 0), axis=0)
+    predictions[:,~prediction_mask]
 
-      oob_score += sum(abs(pred_labels[i] - np.array(labels[left_out_indices]))) / float(len(left_out_indices))
+    posteriors = predictions.astype(float).sum(axis=0) / (predictions != 0).sum(axis=0)
 
-    # Convert oob_preds into a np array
-    # oob_preds_np = np.array(oob_preds)
-    # num_col = oob_preds_np.shape[1]
+    pred_labels = np.array([1 if posterior > .5 else 0 for posterior in posteriors])
 
-    # Get voted Y val for each col
-    # oob_preds_posteriors = np.apply_along_axis(sum_posterior, 0, oob_preds_np)
-    # k = self.n_trees / 2
-    # pred_labels = np.array([1 if posterior > k else 0 for posterior in oob_preds_posteriors])
+    oob_score += sum(abs(pred_labels - np.array(labels)))
 
-    # oob_score = # of times common_oob_pred_y != actual y / number of oob cases
-    # n_outputs = labels.shape[0]
-    # for k in range(n_outputs):
-    #   # Some inputs will not have an oob pred so just skip them
-    #   if pred_labels[k] == 0:
-    #     continue
-
-    #   # oob_score += (voted_oob_preds[k] != Y[k])
-    #   oob_score += abs(pred_labels[k] - labels[k])
-
-    # self.oob_score = oob_score / n_outputs
-
-    # for k in range(len(pred_labels)):
-    #   oob_score += abs(pred_labels[k] - labels[self.trees[i].indices])
-
-    self.oob_score = oob_score / self.n_trees
+    self.oob_score = 1.0 - (oob_score / n_outputs)
 
     return self.oob_score
 
