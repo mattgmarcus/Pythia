@@ -1,4 +1,5 @@
 from tree import DecisionTreeClassifier
+from tree import DecisionTreeRegressor
 from joblib import Parallel, delayed
 from collections import Counter
 import numpy as np
@@ -31,15 +32,14 @@ def bootstrap_build_tree(tree, samples, labels):
   print "Finished growing tree"
   return tree
 
-class RandomForestClassifier():
-  def __init__(self, n_trees, n_jobs, max_depth=10000, use_posterior=False):
+class RandomForest(object):
+  def __init__(self, n_trees, n_jobs, max_depth=10000):
     self.n_trees = n_trees
     self.n_jobs = n_jobs
     self.trees = None
     self.oob_score = None
     self.d_features = None
     self.feature_importances = None
-    self.use_posterior = use_posterior
     self.max_depth = max_depth
 
   def fit(self, samples, labels):
@@ -63,8 +63,7 @@ class RandomForestClassifier():
     # Initialize all trees
     self.trees = []
     for i in range(self.n_trees):
-      tree = DecisionTreeClassifier(self.max_depth, use_posterior=self.use_posterior)
-      # tree = sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth, max_features="sqrt")
+      tree = self.make_tree()
       self.trees.append(tree)
 
     # Fit trees in parallel
@@ -76,6 +75,8 @@ class RandomForestClassifier():
 
     return self
 
+  def make_tree(self):
+    pass
 
   def predict(self, samples):
     # Preds is a list where each element is a list of predicted values
@@ -87,19 +88,16 @@ class RandomForestClassifier():
     predictions = np.array(predictions)
     # num_col = preds_np.shape[1]
 
-    posteriors = np.apply_along_axis(sum_posterior, 0, predictions)
-    k = self.n_trees / 2
-    pred_labels = np.array([1 if posterior > k else 0 for posterior in posteriors])
-
+    pred_labels = self._predict(predictions)
     # Get voted Y val for each col
     # return np.apply_along_axis(mode, 0, predictions)
     return pred_labels
 
+  def _predict(self, predictions):
+    pass
+
   def get_oob_score(self, samples, labels):
-
     n_outputs = labels.shape[0]
-
-    oob_score = 0.0
 
     predictions = np.zeros((self.n_trees, n_outputs))
 
@@ -117,9 +115,13 @@ class RandomForestClassifier():
 
     posteriors = predictions.astype(float).sum(axis=0) / (predictions != 0).sum(axis=0)
 
-    pred_labels = np.array([1 if posterior > .5 else 0 for posterior in posteriors])
+    pred_labels = [1 if posterior > .5 else 0 for posterior in posteriors]
 
-    oob_score += sum(abs(pred_labels - np.array(labels)))
+    oob_score = 0.0
+    for pred, actual in zip(pred_labels, labels):
+      oob_score += (1 if (pred - actual != 0) else 0)
+
+    # oob_score = sum(abs(pred_labels - np.array(labels)))
 
     self.oob_score = 1.0 - (oob_score / n_outputs)
 
@@ -131,10 +133,27 @@ class RandomForestClassifier():
 
     difference = 0.0
     for pred, actual in zip(predicted_labels, test_labels):
-      difference += abs(pred - actual)
+      difference += (1 if (pred - actual != 0) else 0)
 
     return 1.0 - (difference / len(predicted_labels))
 
 
+  # TODO: no one got time for this
+  # But if we do, this will replace the dictvectorizer stuff
   def feature_relevances(self):
     pass
+
+class RandomForestClassifier(RandomForest):
+  def __init__(self, n_trees, n_jobs, max_depth=10000, use_posterior=False):
+    super(RandomForestClassifier, self).__init__(n_trees, n_jobs, max_depth)
+    self.use_posterior = use_posterior
+
+  def make_tree(self):
+    # return sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth, max_features="sqrt")
+    return DecisionTreeClassifier(self.max_depth, use_posterior=self.use_posterior)
+
+  def _predict(self, predictions):
+    #TODO: ATTN YONDON: np magic for summing along axis
+    posteriors = np.apply_along_axis(sum_posterior, 0, predictions)
+    k = self.n_trees / 2
+    return np.array([1 if posterior > k else 0 for posterior in posteriors])
