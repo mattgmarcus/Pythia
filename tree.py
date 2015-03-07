@@ -55,15 +55,14 @@ class Leaf(Node):
     return self.value
 
 
-class DecisionTreeClassifier():
+class DecisionTree(object):
   """Decision Tree using CART method"""
-  def __init__(self, max_depth, use_posterior=False):
+  def __init__(self, max_depth):
     self.classes = None
     self.n_classes = None
     self.d_features = None
     self.feature_relevances = None
     self.class_weights = None
-    self.use_posterior = use_posterior
     self.root_node = None
     self.max_depth = max_depth
 
@@ -129,6 +128,66 @@ class DecisionTreeClassifier():
   # function (feature_vector -> {true, false})
   def split_compare(self, sample, (feature_index, threshold)):
     return sample[feature_index] < threshold
+
+  def _fit(self):
+    pass
+
+  def _split(self, samples, splitter):
+    """
+    Split samples given a function that represents the feature split test
+
+    Parameters:
+      samples: the samples we are interested in splitting, usually probably Node.samples
+      splitter: tuple of (feature_index, threshold)
+
+    Returns:
+      pass_index: index of samples that passed split_test
+      fail_index: index of samples that failed split_test
+    """
+    pass_index = []
+    fail_index = []
+    for i, sample in enumerate(samples):
+      if self.split_compare(sample, splitter):
+        pass_index.append(i)
+      else:
+        fail_index.append(i)
+    return pass_index, fail_index
+
+
+  def predict(self, test_samples):
+    # TODO: we'll have to figure out a way to take advantage of column indexing here.
+    # May have to convert back to nparray as passed in later
+    samples = sanitize_samples(test_samples)
+    samples = np.array(samples)
+
+    return [self._predict(sample, self.root_node) for sample in samples]
+
+
+  def _predict(self, sample, current_node):
+    # Base Case: Node is a leaf
+    if isinstance(current_node, Leaf):
+      return self.get_leaf_value(current_node)
+    else:
+      if self.split_compare(sample, current_node.splitter):
+        return self._predict(sample, current_node.left_child)
+      else:
+        return self._predict(sample, current_node.right_child)
+
+  def get_leaf_value(self, current_node):
+    pass
+
+  def score(self, test_samples, test_labels):
+    predicted_labels = self.predict(test_samples)
+    difference = 0.0
+    for pred, actual in zip(predicted_labels, test_labels):
+      difference += (1 if (pred - actual != 0) else 0)
+
+    return 1.0 - (difference / len(test_labels))
+
+class DecisionTreeClassifier(DecisionTree):
+  def __init__(self, max_depth, use_posterior=False):
+    super(DecisionTreeClassifier, self).__init__(max_depth)
+    self.use_posterior = use_posterior
 
   def _fit(self, samples, labels, randomize, current_depth=1, posterior_label=1):
     # Base cases
@@ -202,53 +261,6 @@ class DecisionTreeClassifier():
 
     return gini
 
+  def get_leaf_value(self, current_node):
+    return current_node.posterior if self.use_posterior else current_node.value
 
-  def _split(self, samples, splitter):
-    """
-    Split samples given a function that represents the feature split test
-
-    Parameters:
-      samples: the samples we are interested in splitting, usually probably Node.samples
-      splitter: tuple of (feature_index, threshold)
-
-    Returns:
-      pass_index: index of samples that passed split_test
-      fail_index: index of samples that failed split_test
-    """
-    pass_index = []
-    fail_index = []
-    for i, sample in enumerate(samples):
-      if self.split_compare(sample, splitter):
-        pass_index.append(i)
-      else:
-        fail_index.append(i)
-    return pass_index, fail_index
-
-
-  def predict(self, test_samples):
-    # TODO: we'll have to figure out a way to take advantage of column indexing here.
-    # May have to convert back to nparray as passed in later
-    samples = sanitize_samples(test_samples)
-    samples = np.array(samples)
-
-    return [self._predict(sample, self.root_node) for sample in samples]
-
-
-  def _predict(self, sample, current_node):
-    # Base Case: Node is a leaf
-    if isinstance(current_node, Leaf):
-      return current_node.posterior if self.use_posterior else current_node.value
-
-    else:
-      if self.split_compare(sample, current_node.splitter):
-        return self._predict(sample, current_node.left_child)
-      else:
-        return self._predict(sample, current_node.right_child)
-
-  def score(self, test_samples, test_labels):
-    predicted_labels = self.predict(test_samples)
-    difference = 0.0
-    for pred, actual in zip(predicted_labels, test_labels):
-      difference += abs(pred - actual)
-
-    return 1.0 - (difference / len(test_labels))
