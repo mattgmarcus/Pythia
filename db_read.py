@@ -8,7 +8,7 @@ import os
 
 def get_data(db, feature_fields=None, label_fields=None, sql=None,
              label_mapping=None, features_processing=None,
-             shuffle=False, testing=False):
+             shuffle=False, testing=False, num_samples=1000):
   """
   Grabs information from the database and returns them as a multi-dimensional list of features and
   a list of labels
@@ -48,6 +48,5 @@ def get_data(db, feature_fields=None, label_fields=None, sql=None,
   labels = map(label_mapping, features)
   features = map(features_processing, features)
 
-  sample_size = 1000
-  return features[:sample_size], labels[:sample_size]
+  return features[:num_samples], labels[:num_samples]
 

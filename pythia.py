@@ -25,11 +25,11 @@ def accept(args):
   label_fields = []
 
   rej_sql = text("select %s from rejected_loans" % feature_string)
-  rej_features, _ = get_data("rejected", sql=rej_sql, shuffle=True, testing=True)
+  rej_features, _ = get_data("rejected", sql=rej_sql, num_samples=args.numsamples, shuffle=True, testing=True)
   rej_labels = [0] * len(rej_features) # label 0 for rejected
 
   acc_sql = text("select %s from loans" % feature_string)
-  acc_features, _ = get_data("loans", sql=acc_sql, shuffle=True, testing=True)
+  acc_features, _ = get_data("loans", sql=acc_sql, num_samples=args.numsamples, shuffle=True, testing=True)
   acc_labels = [1] * len(acc_features) # label 1 for accepted
 
   # TODO concatenate together and feed to classifier
@@ -44,11 +44,12 @@ def accept(args):
   train_features, test_features, train_labels, test_labels = \
     train_test_split(features, labels, test_size=.3)
 
-  classifier = RandomForestClassifier(n_trees=16,
+  classifier = RandomForestClassifier(n_trees=args.numtrees,
     n_jobs=8,
-    max_depth=10000)
+    max_depth=10000,
+    use_posterior=args.posterior)
 
-  # classifier = RandomForestClassifier(n_estimators=1000, \
+  # classifier = RandomForestClassifier(n_estimators=args.numtrees, \
   #                                     n_jobs=-1, \
   #                                     verbose=3,
   #                                     oob_score=True,
@@ -121,6 +122,7 @@ def quality(args):
   sql = text("select %s from loans" % feature_string)
   features, labels = get_data("loans",
                               sql=sql,
+                              num_samples=args.numsamples,
                               label_mapping=loan_status_labels,
                               features_processing=remove_loan_status,
                               shuffle=True,
@@ -161,7 +163,7 @@ def quality(args):
   # classifier = DecisionTreeClassifier(10000)
   # classifier = sklearn.tree.DecisionTreeClassifier()
 
-  classifier = RandomForestClassifier(n_trees=100,
+  classifier = RandomForestClassifier(n_trees=args.numtrees,
     n_jobs=8,
     max_depth=10000)
 
@@ -180,6 +182,13 @@ if __name__=="__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument("test", help="the test to run, one of: accept, grade, quality",
                       type=str)
+  parser.add_argument("-t", "--numtrees", help="number of trees in the forest",
+                      type=int, default=16)
+  parser.add_argument("-m", "--numsamples", help="number of samples to run on",
+                      type=int, default=1000)
+  parser.add_argument("-p", "--posterior", help="use posterior probability instead of mode",
+                      default=True)
+  parser.add_argument("-s", "--usesklearn", help="use sklearn")
   args = parser.parse_args()
   print args.test
   if args.test == "accept":
