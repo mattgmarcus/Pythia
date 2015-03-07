@@ -70,6 +70,12 @@ def loan_status_labels(label):
 def remove_loan_status(features):
   return features[:1]
 
+def grade(args):
+  feature_fields = [
+  ]
+  label_fields = [
+  ]
+
 def quality(args):
   feature_fields = [
       #"loan_status",
