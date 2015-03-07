@@ -56,6 +56,7 @@ def accept(args):
 
   classifier.fit(train_features, train_labels)
   print classifier.score(test_features, test_labels)
+  print classifier.oob_score
   # importances = classifier.feature_importances_
   # print zip(vect.get_feature_names(), importances)
 
