@@ -53,11 +53,13 @@ class Leaf(Node):
 
 
 class LeafClassifier(Leaf):
-  def __init__(self, posterior_label, labels):
+  def __init__(self, labels, posterior_label=None):
     counts = Counter(labels)
     most_common_label = counts.most_common(1)[0][0]
     self.value = most_common_label
-    self.posterior = float(counts[posterior_label]) / len(labels)
+
+    if posterior_label:
+      self.posterior = float(counts[posterior_label]) / len(labels)
 
 
 class LeafRegressor(Leaf):
@@ -140,7 +142,7 @@ class DecisionTree(object):
   def split_compare(self, sample, (feature_index, threshold)):
     return sample[feature_index] < threshold
 
-  def _fit(self, samples, labels, randomize, current_depth=1, posterior_label=None):
+  def _fit(self, samples, labels, randomize, current_depth=1):
     # Base cases
     # No samples/labels
     if len(labels) == 0:
@@ -149,12 +151,12 @@ class DecisionTree(object):
     # all labels are same
     #    return label same
     elif (len(set(labels))) == 1:
-      return self.make_leaf(labels, posterior_label)
+      return self.make_leaf(labels)
 
     # current_depth >= max_depth || len(samples) < 5
     #   return leaf node, where value=mode(current labels)
     elif (current_depth >= self.max_depth) or (len(samples) < 10): #TODO: Change min # samples
-      return self.make_leaf(labels, posterior_label)
+      return self.make_leaf(labels)
 
     # Recursive case
     else:
@@ -243,9 +245,10 @@ class DecisionTree(object):
     return 1.0 - (difference / len(test_labels))
 
 class DecisionTreeClassifier(DecisionTree):
-  def __init__(self, max_depth, use_posterior=False):
+  def __init__(self, max_depth, use_posterior=False, posterior_label=None):
     super(DecisionTreeClassifier, self).__init__(max_depth)
     self.use_posterior = use_posterior
+    self.posterior_label = posterior_label
 
   def _gini_impurity(self, labels):
     """
@@ -275,8 +278,8 @@ class DecisionTreeClassifier(DecisionTree):
   def get_leaf_value(self, current_node):
     return current_node.posterior if self.use_posterior else current_node.value
 
-  def make_leaf(self, labels, posterior_label=1):
-    return LeafClassifier(posterior_label, labels)
+  def make_leaf(self, labels):
+    return LeafClassifier(labels, self.posterior_label)
 
   def get_error(self, labels):
     return self._gini_impurity(labels)

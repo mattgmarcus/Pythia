@@ -150,7 +150,7 @@ class RandomForestClassifier(RandomForest):
 
   def make_tree(self):
     # return sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth, max_features="sqrt")
-    return DecisionTreeClassifier(self.max_depth, use_posterior=self.use_posterior)
+    return DecisionTreeClassifier(self.max_depth, use_posterior=self.use_posterior, posterior_label=1)
 
   def _predict(self, predictions):
     #TODO: ATTN YONDON: np magic for summing along axis
