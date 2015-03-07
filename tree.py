@@ -64,8 +64,8 @@ class LeafClassifier(Leaf):
 
 class LeafRegressor(Leaf):
   def __init__(self, labels):
-    self.unrounded_value = float(math.sum(labels)) / len(labels)
-    self.value = math.round(self.unrounded_value)
+    self.unrounded_value = float(sum(labels)) / len(labels)
+    self.value = round(self.unrounded_value)
 
 
 class DecisionTree(object):
@@ -287,14 +287,15 @@ class DecisionTreeClassifier(DecisionTree):
 
 class DecisionTreeRegressor(DecisionTree):
   def __init__(self, max_depth):
-    super(DecisionTreeClassifier, self).__init__(max_depth)
+    super(DecisionTreeRegressor, self).__init__(max_depth)
 
   def get_error(self, labels):
     return self._ssd_error(labels)
 
   def _ssd_error(self, labels):
-    mean = float(math.sum(labels)) / len(labels)
-    return sum([(label - mean)^2 for label in labels])
+    num_labels = len(labels)
+    mean = float(sum(labels)) / num_labels
+    return sum([np.power(label - mean, 2) for label in labels]) / num_labels
 
   def get_leaf_value(self, current_node):
     return current_node.value

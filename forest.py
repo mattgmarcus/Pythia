@@ -121,8 +121,6 @@ class RandomForest(object):
     for pred, actual in zip(pred_labels, labels):
       oob_score += (1 if (pred - actual != 0) else 0)
 
-    # oob_score = sum(abs(pred_labels - np.array(labels)))
-
     self.oob_score = 1.0 - (oob_score / n_outputs)
 
     return self.oob_score
@@ -157,3 +155,15 @@ class RandomForestClassifier(RandomForest):
     posteriors = np.apply_along_axis(sum_posterior, 0, predictions)
     k = self.n_trees / 2
     return np.array([1 if posterior > k else 0 for posterior in posteriors])
+
+class RandomForestRegressor(RandomForest):
+  def __init__(self, n_trees, n_jobs, max_depth=10000):
+    super(RandomForestRegressor, self).__init__(n_trees, n_jobs, max_depth)
+
+  def make_tree(self):
+    # return sklearn.tree.DecisionTreeClassifier(max_depth=self.max_depth, max_features="sqrt")
+    return DecisionTreeRegressor(self.max_depth)
+
+  def _predict(self, predictions):
+    averages = np.mean(predictions, 0)
+    return np.round(averages)

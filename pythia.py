@@ -11,6 +11,7 @@ from sklearn.preprocessing import Imputer
 from tree import DecisionTreeClassifier
 from tree import DecisionTreeRegressor
 from forest import RandomForestClassifier
+from forest import RandomForestRegressor
 #import sklearn.tree
 
 def accept(args):
@@ -166,11 +167,11 @@ def grade(args):
   test_features: size (k, n) matrix of k samples of n features
   train_labels: size (k, 1) vector of the k training samples
   """
-  classifier = RandomForestRegressor(n_estimators=args.numtrees, \
-                                      n_jobs=-1, \
-                                      verbose=3,
-                                      oob_score=True,
-                                      max_features=None)
+  # classifier = RandomForestRegressor(n_estimators=args.numtrees, \
+  #                                     n_jobs=-1, \
+  #                                     verbose=3,
+  #                                     oob_score=True,
+  #                                     max_features=None)
 
   # classifier = DecisionTreeClassifier(10000)
   # classifier = sklearn.tree.DecisionTreeClassifier()
@@ -180,8 +181,8 @@ def grade(args):
     max_depth=10000)
 
   classifier.fit(train_features, train_labels)
-  importances = classifier.feature_importances_
-  print zip(vect.get_feature_names(), importances)
+  # importances = classifier.feature_importances_
+  # print zip(vect.get_feature_names(), importances)
   # print vect.feature_names_
   # print vect.vocabulary_
   # print vect.inverse_transform(importances)
