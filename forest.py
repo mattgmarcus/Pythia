@@ -127,14 +127,7 @@ class RandomForest(object):
 
 
   def score(self, test_samples, test_labels):
-    predicted_labels = self.predict(test_samples)
-
-    difference = 0.0
-    for pred, actual in zip(predicted_labels, test_labels):
-      difference += (1 if (pred - actual != 0) else 0)
-
-    return 1.0 - (difference / len(predicted_labels))
-
+    pass
 
   # TODO: no one got time for this
   # But if we do, this will replace the dictvectorizer stuff
@@ -156,6 +149,16 @@ class RandomForestClassifier(RandomForest):
     k = self.n_trees / 2
     return np.array([1 if posterior > k else 0 for posterior in posteriors])
 
+  def score(self, test_samples, test_labels):
+    predicted_labels = self.predict(test_samples)
+
+    difference = 0.0
+    for pred, actual in zip(predicted_labels, test_labels):
+      difference += (1 if (pred - actual != 0) else 0)
+
+    return 1.0 - (difference / len(predicted_labels))
+
+
 class RandomForestRegressor(RandomForest):
   def __init__(self, n_trees, n_jobs, max_depth=10000):
     super(RandomForestRegressor, self).__init__(n_trees, n_jobs, max_depth)
@@ -166,4 +169,14 @@ class RandomForestRegressor(RandomForest):
 
   def _predict(self, predictions):
     averages = np.mean(predictions, 0)
-    return np.round(averages)
+    return averages
+
+  def score(self, test_samples, test_labels):
+    predicted_labels = self.predict(test_samples)
+    predicted_labels = np.array(predicted_labels)
+    test_labels = np.array(test_labels)
+
+    reg_ssd = ((test_labels - predicted_labels) ** 2).sum()
+    res_ssd = ((test_labels - test_labels.mean()) ** 2).sum()
+
+    return 1.0 - (reg_ssd / res_ssd)

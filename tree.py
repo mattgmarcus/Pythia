@@ -155,7 +155,7 @@ class DecisionTree(object):
 
     # current_depth >= max_depth || len(samples) < 5
     #   return leaf node, where value=mode(current labels)
-    elif (current_depth >= self.max_depth) or (len(samples) < 10): #TODO: Change min # samples
+    elif (current_depth >= self.max_depth) or (len(samples) < 20): #TODO: Change min # samples
       return self.make_leaf(labels)
 
     # Recursive case
@@ -295,7 +295,7 @@ class DecisionTreeRegressor(DecisionTree):
   def _ssd_error(self, labels):
     num_labels = len(labels)
     mean = float(sum(labels)) / num_labels
-    return sum([np.power(label - mean, 2) for label in labels]) / num_labels
+    return sum([np.power(label - mean, 2) for label in labels])
 
   def get_leaf_value(self, current_node):
     return current_node.value
