@@ -67,8 +67,9 @@ class RandomForest(object):
       self.trees.append(tree)
 
     # Fit trees in parallel
-    self.trees = Parallel(n_jobs=self.n_jobs, backend="threading")\
-      (delayed(bootstrap_build_tree)(t, samples, labels) for t in self.trees)
+    self.trees = [bootstrap_build_tree(t, samples, labels) for t in self.trees]
+    # self.trees = Parallel(n_jobs=self.n_jobs, backend="threading")\
+    #   (delayed(bootstrap_build_tree)(t, samples, labels) for t in self.trees)
       # (delayed(self._parallel_helper)(self, "bootstrap_build_tree", t, samples, labels) for t in self.trees)
 
     self.get_oob_score(samples, labels)
@@ -81,8 +82,9 @@ class RandomForest(object):
   def predict(self, samples):
     # Preds is a list where each element is a list of predicted values
     # for each decision tree
-    predictions = Parallel(n_jobs=self.n_jobs, backend="threading")\
-      (delayed(_parallel_helper)(t, "predict", samples) for t in self.trees)
+    predictions = [t.predict(samples) for t in self.trees]
+    # predictions = Parallel(n_jobs=self.n_jobs, backend="threading")\
+    #   (delayed(_parallel_helper)(t, "predict", samples) for t in self.trees)
 
     # Convert preds into a np array
     predictions = np.array(predictions)

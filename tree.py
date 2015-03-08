@@ -137,11 +137,6 @@ class DecisionTree(object):
   #   samples = np.append(samples, np.array(vectors), 1)
   #   return samples
 
-
-  # function (feature_vector -> {true, false})
-  def split_compare(self, sample, (feature_index, threshold)):
-    return sample[feature_index] < threshold
-
   def _fit(self, samples, labels, randomize, current_depth=1):
     # Base cases
     # No samples/labels
@@ -176,9 +171,11 @@ class DecisionTree(object):
 
             pass_index, fail_index = self._split(samples, splitter)
 
-            if (len(pass_index) > 0) and (len(fail_index) > 0):
-              errors[splitter] = ((len(pass_index) / num_samples) * self.get_error([labels[i] for i in pass_index]) +
-                                       (len(fail_index) / num_samples) * self.get_error([labels[i] for i in fail_index]))
+            num_passed = len(pass_index)
+            num_failed = len(fail_index)
+            if (num_passed > 0) and (num_failed > 0):
+              errors[splitter] = ((num_passed / num_samples) * self.get_error([labels[i] for i in pass_index]) +
+                                       (num_failed / num_samples) * self.get_error([labels[i] for i in fail_index]))
 
       best_splitter = min(errors)
       pass_index, fail_index = self._split(samples, best_splitter)
@@ -207,7 +204,8 @@ class DecisionTree(object):
     pass_index = []
     fail_index = []
     for i, sample in enumerate(samples):
-      if self.split_compare(sample, splitter):
+      # samples[feature_index] < threshold
+      if sample[splitter[0]] < splitter[1]:
         pass_index.append(i)
       else:
         fail_index.append(i)
@@ -228,7 +226,7 @@ class DecisionTree(object):
     if isinstance(current_node, Leaf):
       return self.get_leaf_value(current_node)
     else:
-      if self.split_compare(sample, current_node.splitter):
+      if sample[current_node.splitter[0]] < current_node.splitter[1]:
         return self._predict(sample, current_node.left_child)
       else:
         return self._predict(sample, current_node.right_child)
@@ -290,12 +288,18 @@ class DecisionTreeRegressor(DecisionTree):
     super(DecisionTreeRegressor, self).__init__(max_depth)
 
   def get_error(self, labels):
-    return self._ssd_error(labels)
+    return self._msd_error(labels)
 
-  def _ssd_error(self, labels):
-    num_labels = len(labels)
-    mean = float(sum(labels)) / num_labels
-    return sum([np.power(label - mean, 2) for label in labels])
+  def _msd_error(self, labels):
+    # num_labels = len(labels)
+    # mean = float(sum(labels)) / num_labels
+    # sum_ssd = 0
+    # for label in labels:
+    #   sum_ssd += (label - mean)**2
+
+    # return sum_ssd / num_labels
+    # # return sum([np.power(label - mean, 2) for label in labels]) / num_labels
+    return np.array(labels).var()
 
   def get_leaf_value(self, current_node):
     return current_node.value
