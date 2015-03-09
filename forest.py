@@ -29,7 +29,7 @@ def bootstrap_build_tree(tree, samples, labels):
   # tree.fit(samples[random_indices,:], labels[random_indices])
   tree.indices = random_indices
 
-  print "Finished growing tree"
+  # print "Finished growing tree"
   return tree
 
 class RandomForest(object):
