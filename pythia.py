@@ -156,46 +156,48 @@ def grade(args):
   # min_label = min(labels)
   # labels = [round(label - min_label) for label in labels]
 
-  train_features, test_features, train_labels, test_labels =\
-  train_test_split(features, labels, test_size=.3)
+  for i in range(args.numiters):
 
-  """
-  train_features: size (m, n) matrix of m samples of n features
-  train_labels: size (m, 1) vector of the m training samples
-  test_features: size (k, n) matrix of k samples of n features
-  train_labels: size (k, 1) vector of the k training samples
-  """
-  if args.test == "grade":
-    # classifier = RandomForestRegressor(n_estimators=args.numtrees, \
-    #                                     n_jobs=-1, \
-    #                                     verbose=3,
-    #                                     oob_score=True,
-    #                                     max_features=None)
+    train_features, test_features, train_labels, test_labels =\
+    train_test_split(features, labels, test_size=.3)
 
-    # classifier = DecisionTreeClassifier(10000)
-    # classifier = sklearn.tree.DecisionTreeClassifier()
+    """
+    train_features: size (m, n) matrix of m samples of n features
+    train_labels: size (m, 1) vector of the m training samples
+    test_features: size (k, n) matrix of k samples of n features
+    train_labels: size (k, 1) vector of the k training samples
+    """
+    if args.test == "grade":
+      # classifier = RandomForestRegressor(n_estimators=args.numtrees, \
+      #                                     n_jobs=-1, \
+      #                                     verbose=3,
+      #                                     oob_score=True,
+      #                                     max_features=None)
 
-    classifier = RandomForestRegressor(n_trees=args.numtrees,
-      n_jobs=8,
-      max_depth=10000)
+      # classifier = DecisionTreeClassifier(10000)
+      # classifier = sklearn.tree.DecisionTreeClassifier()
 
-    classifier.fit(train_features, train_labels)
-    # importances = classifier.feature_importances_
-    # print zip(vect.get_feature_names(), importances)
-    # print vect.feature_names_
-    # print vect.vocabulary_
-    # print vect.inverse_transform(importances)
-    # print importances
-    # print importances.shape
+      classifier = RandomForestRegressor(n_trees=args.numtrees,
+        n_jobs=8,
+        max_depth=10000)
 
-    print "Score: " + str(classifier.score(test_features, test_labels))
-    #print classifier.oob_score
-  elif args.test == "grade_logit":
-    w, theta = logistic.ordinal_logistic_fit(train_features, train_labels)
-    pred_labels = logistic.ordinal_logistic_predict(w, theta, test_features)
-    # w, theta = ordinal_logit.fit(train_features, train_labels)
-    # pred_labels = ordinal_logit.predict(w, theta, test_features)
-    print "R squared score" + str(get_R_squared(pred_labels, test_labels))
+      classifier.fit(train_features, train_labels)
+      # importances = classifier.feature_importances_
+      # print zip(vect.get_feature_names(), importances)
+      # print vect.feature_names_
+      # print vect.vocabulary_
+      # print vect.inverse_transform(importances)
+      # print importances
+      # print importances.shape
+
+      print "Score: " + str(classifier.score(test_features, test_labels))
+      #print classifier.oob_score
+    elif args.test == "grade_logit":
+      # w, theta = logistic.ordinal_logistic_fit(train_features, train_labels)
+      # pred_labels = logistic.ordinal_logistic_predict(w, theta, test_features)
+      w, theta = ordinal_logit.fit(train_features, train_labels)
+      pred_labels = ordinal_logit.predict(w, theta, test_features)
+      print "R squared score " + str(get_R_squared(pred_labels, test_labels))
 
 def quality(args):
   feature_fields = [
@@ -272,25 +274,26 @@ def quality(args):
   # features = imp.transform(features)
   # print features.shape
 
-  train_features, test_features, train_labels, test_labels =\
-  train_test_split(features, labels, test_size=.3)
-
-  """
-  train_features: size (m, n) matrix of m samples of n features
-  train_labels: size (m, 1) vector of the m training samples
-  test_features: size (k, n) matrix of k samples of n features
-  train_labels: size (k, 1) vector of the k training samples
-  """
-  # classifier = RandomForestClassifier(n_estimators=args.numtrees, \
-  #                                     n_jobs=-1, \
-  #                                     verbose=3,
-  #                                     oob_score=True,
-  #                                     max_features=None)
-
-  # classifier = DecisionTreeClassifier(10000)
-  # classifier = sklearn.tree.DecisionTreeClassifier()
-
   for i in range(args.numiters):
+
+    train_features, test_features, train_labels, test_labels =\
+    train_test_split(features, labels, test_size=.3)
+
+    """
+    train_features: size (m, n) matrix of m samples of n features
+    train_labels: size (m, 1) vector of the m training samples
+    test_features: size (k, n) matrix of k samples of n features
+    train_labels: size (k, 1) vector of the k training samples
+    """
+    # classifier = RandomForestClassifier(n_estimators=args.numtrees, \
+    #                                     n_jobs=-1, \
+    #                                     verbose=3,
+    #                                     oob_score=True,
+    #                                     max_features=None)
+
+    # classifier = DecisionTreeClassifier(10000)
+    # classifier = sklearn.tree.DecisionTreeClassifier()
+
     classifier = RandomForestClassifier(n_trees=args.numtrees,
       n_jobs=8,
       max_depth=10000)
