@@ -15,9 +15,9 @@ from forest import RandomForestRegressor
 # from ordinal_logit import OrdinalLogisticRegressor
 #import sklearn.tree
 import ordinal_logit
-# import sys
-# sys.path.append("../minirank")
-# from minirank import logistic
+import sys
+sys.path.append("../minirank")
+from minirank import logistic
 
 def accept(args):
   feature_fields = [
@@ -193,11 +193,10 @@ def grade(args):
     print classifier.score(test_features, test_labels)
     #print classifier.oob_score
   elif args.test == "grade_logit":
-    # classifier = OrdinalLogisticRegress
-    # w, theta = logistic.ordinal_logistic_fit(train_features, train_labels)
-    # pred_labels = logistic.ordinal_logistic_predict(w, theta, test_features)
-    w, theta = ordinal_logit.fit(train_features, train_labels)
-    pred_labels = ordinal_logit.predict(w, theta, test_features)
+    w, theta = logistic.ordinal_logistic_fit(train_features, train_labels)
+    pred_labels = logistic.ordinal_logistic_predict(w, theta, test_features)
+    # w, theta = ordinal_logit.fit(train_features, train_labels)
+    # pred_labels = ordinal_logit.predict(w, theta, test_features)
     print get_R_squared(pred_labels, test_labels)
 
 def quality(args):

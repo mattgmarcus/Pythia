@@ -12,11 +12,15 @@ def fit(samples, labels):
   idx = np.argsort(labels)
   samples = samples[idx]
   labels = labels[idx]
+
   # labels should now be continuous and start at 0
   unique_labels = np.unique(labels)
+  for i, u in enumerate(unique_labels):
+      labels[labels == u] = i
+  unique_labels = np.unique(labels)
 
-  params0 = np.zeros(samples.shape[1] + 35 - 1) # TODODODODODOD
-  params0[samples.shape[1]:] = np.sort((35 - 1) * np.random.rand(35 - 1))
+  params0 = np.zeros(samples.shape[1] + unique_labels.size - 1)
+  params0[samples.shape[1]:] = np.sort((unique_labels.size - 1) * np.random.rand(unique_labels.size - 1))
 
 
   def objective(params, samples, labels):
@@ -28,7 +32,7 @@ def fit(samples, labels):
     #print theta
     loss = 0.
     for i in range(samples.shape[0]):
-      k = 35 - 1 #len(theta) # Assuming sorted
+      k = unique_labels.size - 1 # Assuming sorted
       y = labels[i]
       wx = w.T.dot(samples[i])
       theta_upper = float("inf") if y == k else theta[y]
@@ -73,7 +77,7 @@ def fit(samples, labels):
     grad_theta = np.zeros(theta.shape)
 
     for i in range(0, samples.shape[0]):
-      k = 35 - 1#len(theta) # Assuming sorted
+      k = unique_labels.size - 1 # Assuming sorted
       y = labels[i]
       y0 = y - 1
       x = samples[i]
@@ -109,5 +113,3 @@ def predict(w, theta, samples):
   tmp = xw[:, None].repeat(theta.size, axis=1)
   return np.argmax(tmp < theta, axis=1)
 
-def score(test_samples, test_labels):
-  pass
