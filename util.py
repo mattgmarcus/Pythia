@@ -10,3 +10,6 @@ def sanitize_samples(samples):
 def mode(col):
   common = Counter(col)
   return common.most_common(1)[0][0]
+
+def sum_posterior(col):
+  return sum(col)
