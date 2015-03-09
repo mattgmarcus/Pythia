@@ -12,7 +12,12 @@ from tree import DecisionTreeClassifier
 from tree import DecisionTreeRegressor
 from forest import RandomForestClassifier
 from forest import RandomForestRegressor
+# from ordinal_logit import OrdinalLogisticRegressor
 #import sklearn.tree
+import ordinal_logit
+# import sys
+# sys.path.append("../minirank")
+# from minirank import logistic
 
 def accept(args):
   feature_fields = [
@@ -76,7 +81,7 @@ def loan_grade_labels(features):
 
   label = features[0]
   # Examples: A1 = 1, G5 = 35, C2=12
-  return grade_dict[label[0]]*5 + int(label[1])
+  return grade_dict[label[0]]*5 + int(label[1]) - 1
   # return grade_dict[label[0]]
   # return features[0]
 
@@ -89,15 +94,28 @@ def remove_loan_status(features):
 def remove_loan_grade(features):
   return remove_label(features, 0)
 
+def get_R_squared(predicted_labels, test_labels):
+  print predicted_labels
+  print test_labels
+
+  predicted_labels = np.asarray(predicted_labels)
+  test_labels = np.asarray(test_labels)
+
+  reg_ssd = ((test_labels - predicted_labels) ** 2).sum()
+  res_ssd = ((test_labels - test_labels.mean()) ** 2).sum()
+
+  return 1.0 - (reg_ssd / res_ssd)
+
 def grade(args):
   feature_fields = [
     "loan_amount",
-    "funded_amount",
-    "funded_amount_investors",
+    # "funded_amount",
+    # "funded_amount_investors",
     "term",
     # "interest_rate",
-    "installment",
+    # "installment",
     "employment_length",
+    "is_income_verified",
     "home_ownership",
     "annual_income",
     "debt_to_income",
@@ -106,7 +124,9 @@ def grade(args):
     "public_records",
     "revolving_balance",
     "revolving_util",
-    "total_accounts"
+    "total_accounts",
+    "mths_since_last_delinq",
+    "mths_since_last_record"
   ]
   label_fields = [
     # "grade",
@@ -135,6 +155,9 @@ def grade(args):
   # features = imp.transform(features)
   # print features.shape
 
+  # min_label = min(labels)
+  # labels = [round(label - min_label) for label in labels]
+
   train_features, test_features, train_labels, test_labels =\
   train_test_split(features, labels, test_size=.3)
 
@@ -144,31 +167,38 @@ def grade(args):
   test_features: size (k, n) matrix of k samples of n features
   train_labels: size (k, 1) vector of the k training samples
   """
-  # classifier = RandomForestRegressor(n_estimators=args.numtrees, \
-  #                                     n_jobs=-1, \
-  #                                     verbose=3,
-  #                                     oob_score=True,
-  #                                     max_features=None)
+  if args.test == "grade":
+    # classifier = RandomForestRegressor(n_estimators=args.numtrees, \
+    #                                     n_jobs=-1, \
+    #                                     verbose=3,
+    #                                     oob_score=True,
+    #                                     max_features=None)
 
-  # classifier = DecisionTreeClassifier(10000)
-  # classifier = sklearn.tree.DecisionTreeClassifier()
+    # classifier = DecisionTreeClassifier(10000)
+    # classifier = sklearn.tree.DecisionTreeClassifier()
 
-  classifier = RandomForestRegressor(n_trees=args.numtrees,
-    n_jobs=8,
-    max_depth=10000)
+    classifier = RandomForestRegressor(n_trees=args.numtrees,
+      n_jobs=8,
+      max_depth=10000)
 
-  classifier.fit(train_features, train_labels)
-  # importances = classifier.feature_importances_
-  # print zip(vect.get_feature_names(), importances)
-  # print vect.feature_names_
-  # print vect.vocabulary_
-  # print vect.inverse_transform(importances)
-  # print importances
-  # print importances.shape
+    classifier.fit(train_features, train_labels)
+    # importances = classifier.feature_importances_
+    # print zip(vect.get_feature_names(), importances)
+    # print vect.feature_names_
+    # print vect.vocabulary_
+    # print vect.inverse_transform(importances)
+    # print importances
+    # print importances.shape
 
-  print classifier.score(test_features, test_labels)
-  print classifier.oob_score
-
+    print classifier.score(test_features, test_labels)
+    #print classifier.oob_score
+  elif args.test == "grade_logit":
+    # classifier = OrdinalLogisticRegress
+    # w, theta = logistic.ordinal_logistic_fit(train_features, train_labels)
+    # pred_labels = logistic.ordinal_logistic_predict(w, theta, test_features)
+    w, theta = ordinal_logit.fit(train_features, train_labels)
+    pred_labels = ordinal_logit.predict(w, theta, test_features)
+    print get_R_squared(pred_labels, test_labels)
 
 def quality(args):
   feature_fields = [
@@ -280,7 +310,7 @@ def quality(args):
 
 if __name__=="__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument("test", help="the test to run, one of: accept, grade, quality",
+  parser.add_argument("test", help="the test to run, one of: accept, grade, grade_logit, quality",
                       type=str)
   parser.add_argument("-t", "--numtrees", help="number of trees in the forest",
                       type=int, default=16)
@@ -295,7 +325,7 @@ if __name__=="__main__":
     accept(args)
   elif args.test == "quality":
     quality(args)
-  elif args.test == "grade":
+  elif args.test == "grade" or args.test == "grade_logit":
     grade(args)
   else:
     parser.print_help()
