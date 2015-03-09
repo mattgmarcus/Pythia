@@ -107,6 +107,7 @@ def fit(samples, labels):
 
   return w, theta
 
+# TODO: Update this
 def predict(w, theta, samples):
   xw = samples.dot(w)
   theta[-1] = float("inf")

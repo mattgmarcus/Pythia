@@ -49,25 +49,26 @@ def accept(args):
   features = vect.fit_transform(features)
   #print features.shape
 
-  train_features, test_features, train_labels, test_labels = \
-    train_test_split(features, labels, test_size=.3)
+  for i in range(args.numiters):
+    train_features, test_features, train_labels, test_labels = \
+      train_test_split(features, labels, test_size=.3)
 
-  classifier = RandomForestClassifier(n_trees=args.numtrees,
-    n_jobs=8,
-    max_depth=10000,
-    use_posterior=args.posterior)
+    classifier = RandomForestClassifier(n_trees=args.numtrees,
+      n_jobs=8,
+      max_depth=10000,
+      use_posterior=args.posterior)
 
-  # classifier = RandomForestClassifier(n_estimators=args.numtrees, \
-  #                                     n_jobs=-1, \
-  #                                     verbose=3,
-  #                                     oob_score=True,
-  #                                     max_features=None)
+    # classifier = RandomForestClassifier(n_estimators=args.numtrees, \
+    #                                     n_jobs=-1, \
+    #                                     verbose=3,
+    #                                     oob_score=True,
+    #                                     max_features=None)
 
-  classifier.fit(train_features, train_labels)
-  print classifier.score(test_features, test_labels)
-  print classifier.oob_score
-  # importances = classifier.feature_importances_
-  # print zip(vect.get_feature_names(), importances)
+    classifier.fit(train_features, train_labels)
+    print "Score: " + str(classifier.score(test_features, test_labels))
+    print "OOB Score: " + str(classifier.oob_score)
+    # importances = classifier.feature_importances_
+    # print zip(vect.get_feature_names(), importances)
 
 def loan_status_labels(features):
   if features[0] == "Fully Paid":
@@ -95,9 +96,6 @@ def remove_loan_grade(features):
   return remove_label(features, 0)
 
 def get_R_squared(predicted_labels, test_labels):
-  print predicted_labels
-  print test_labels
-
   predicted_labels = np.asarray(predicted_labels)
   test_labels = np.asarray(test_labels)
 
@@ -190,14 +188,14 @@ def grade(args):
     # print importances
     # print importances.shape
 
-    print classifier.score(test_features, test_labels)
+    print "Score: " + str(classifier.score(test_features, test_labels))
     #print classifier.oob_score
   elif args.test == "grade_logit":
     w, theta = logistic.ordinal_logistic_fit(train_features, train_labels)
     pred_labels = logistic.ordinal_logistic_predict(w, theta, test_features)
     # w, theta = ordinal_logit.fit(train_features, train_labels)
     # pred_labels = ordinal_logit.predict(w, theta, test_features)
-    print get_R_squared(pred_labels, test_labels)
+    print "R squared score" + str(get_R_squared(pred_labels, test_labels))
 
 def quality(args):
   feature_fields = [
@@ -292,20 +290,21 @@ def quality(args):
   # classifier = DecisionTreeClassifier(10000)
   # classifier = sklearn.tree.DecisionTreeClassifier()
 
-  classifier = RandomForestClassifier(n_trees=args.numtrees,
-    n_jobs=8,
-    max_depth=10000)
+  for i in range(args.numiters):
+    classifier = RandomForestClassifier(n_trees=args.numtrees,
+      n_jobs=8,
+      max_depth=10000)
 
-  classifier.fit(train_features, train_labels)
-  # importances = classifier.feature_importances_
-  # print zip(vect.get_feature_names(), importances)
-  # print vect.feature_names_
-  # print vect.vocabulary_
-  # print vect.inverse_transform(importances)
-  # print importances
-  # print importances.shape
+    classifier.fit(train_features, train_labels)
+    # importances = classifier.feature_importances_
+    # print zip(vect.get_feature_names(), importances)
+    # print vect.feature_names_
+    # print vect.vocabulary_
+    # print vect.inverse_transform(importances)
+    # print importances
+    # print importances.shape
 
-  print classifier.score(test_features, test_labels)
+    print "Score: " + str(classifier.score(test_features, test_labels))
 
 if __name__=="__main__":
   parser = argparse.ArgumentParser()
@@ -313,13 +312,15 @@ if __name__=="__main__":
                       type=str)
   parser.add_argument("-t", "--numtrees", help="number of trees in the forest",
                       type=int, default=16)
+  parser.add_argument("-n", "--numiters", help="number of iterations",
+                      type=int, default=1)
   parser.add_argument("-m", "--numsamples", help="number of samples to run on",
                       type=int, default=1000)
   parser.add_argument("-p", "--posterior", help="use posterior probability instead of mode",
                       default=True)
   parser.add_argument("-s", "--usesklearn", help="use sklearn")
   args = parser.parse_args()
-  print args.test
+  #print args.test
   if args.test == "accept":
     accept(args)
   elif args.test == "quality":
