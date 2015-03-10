@@ -15,9 +15,10 @@ from tree import DecisionTreeRegressor
 # from ordinal_logit import OrdinalLogisticRegressor
 #import sklearn.tree
 import ordinal_logit
-import sys
-sys.path.append("../minirank")
-from minirank import logistic
+# import sys
+# sys.path.append("../minirank")
+# from minirank import logistic
+import pickle
 
 def accept(args):
   feature_fields = [
@@ -49,8 +50,8 @@ def accept(args):
   features = vect.fit_transform(features)
   #print features.shape
 
-  score = 0.0
-  oob_score = 0.0
+  # score = 0.0
+  # oob_score = 0.0
 
   for i in range(args.numiters):
     train_features, test_features, train_labels, test_labels = \
@@ -69,16 +70,20 @@ def accept(args):
 
     classifier.fit(train_features, train_labels)
 
-    score += classifier.score(test_features, test_labels)
-    oob_score += classifier.oob_score_
+    # score += classifier.score(test_features, test_labels)
+    # oob_score += classifier.oob_score_
 
     # print "Score: " + str(classifier.score(test_features, test_labels))
     # print "OOB Score: " + str(classifier.oob_score)
+    print "Score: " + str(classifier.score(test_features, test_labels))
+    print "OOB Score: " + str(classifier.oob_score)
+    # s = pickle.dump(classifier, open('loan_accept_rfc.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+
     # importances = classifier.feature_importances_
     # print zip(vect.get_feature_names(), importances)
 
-  print "Score: " + str(score / args.numiters)
-  print "OOB Score: " + str(oob_score / args.numiters)
+  # print "Score: " + str(score / args.numiters)
+  # print "OOB Score: " + str(oob_score / args.numiters)
 
 def loan_status_labels(features):
   if features[0] == "Fully Paid":
@@ -293,8 +298,9 @@ def quality(args):
   # features = imp.transform(features)
   # print features.shape
 
-  score = 0.0
-  oob_score = 0.0
+  # score = 0.0
+  # oob_score = 0.0
+
   for i in range(args.numiters):
 
     train_features, test_features, train_labels, test_labels =\
@@ -327,14 +333,15 @@ def quality(args):
     # print vect.inverse_transform(importances)
     # print importances
     # print importances.shape
-    score += classifier.score(test_features, test_labels)
-    oob_score += classifier.oob_score_
-    # print "Score: " + str(classifier.score(test_features, test_labels))
-    # print "OOB Score: " + str(classifier.oob_score_)
+    # score += classifier.score(test_features, test_labels)
+    # oob_score += classifier.oob_score_
+    print "Score: " + str(classifier.score(test_features, test_labels))
+    print "OOB Score: " + str(classifier.oob_score_)
 
-  print "Score: " + str(score / args.numiters)
-  print "OOB Score: " + str(oob_score / args.numiters)
+  # print "Score: " + str(score / args.numiters)
+  # print "OOB Score: " + str(oob_score / args.numiters)
 
+    # s = pickle.dump(classifier, open('data/loan_quality_rfc.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
 
 if __name__=="__main__":
   parser = argparse.ArgumentParser()
