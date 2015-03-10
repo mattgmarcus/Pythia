@@ -3,15 +3,15 @@ import argparse
 import numpy as np
 import scipy as sp
 from db_read import *
-# from sklearn.ensemble import RandomForestClassifier
-# from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import Imputer
 from tree import DecisionTreeClassifier
 from tree import DecisionTreeRegressor
-from forest import RandomForestClassifier
-from forest import RandomForestRegressor
+# from forest import RandomForestClassifier
+# from forest import RandomForestRegressor
 # from ordinal_logit import OrdinalLogisticRegressor
 #import sklearn.tree
 import ordinal_logit
@@ -49,26 +49,36 @@ def accept(args):
   features = vect.fit_transform(features)
   #print features.shape
 
+  score = 0.0
+  oob_score = 0.0
+
   for i in range(args.numiters):
     train_features, test_features, train_labels, test_labels = \
       train_test_split(features, labels, test_size=.3)
 
-    classifier = RandomForestClassifier(n_trees=args.numtrees,
-      n_jobs=8,
-      max_depth=10000,
-      use_posterior=args.posterior)
+    # classifier = RandomForestClassifier(n_trees=args.numtrees,
+    #   n_jobs=8,
+    #   max_depth=10000,
+    #   use_posterior=args.posterior)
 
-    # classifier = RandomForestClassifier(n_estimators=args.numtrees, \
-    #                                     n_jobs=-1, \
-    #                                     verbose=3,
-    #                                     oob_score=True,
-    #                                     max_features=None)
+    classifier = RandomForestClassifier(n_estimators=args.numtrees, \
+                                        n_jobs=-1, \
+                                        verbose=0,
+                                        oob_score=True,
+                                        max_features=None)
 
     classifier.fit(train_features, train_labels)
-    print "Score: " + str(classifier.score(test_features, test_labels))
-    print "OOB Score: " + str(classifier.oob_score)
+
+    score += classifier.score(test_features, test_labels)
+    oob_score += classifier.oob_score_
+
+    # print "Score: " + str(classifier.score(test_features, test_labels))
+    # print "OOB Score: " + str(classifier.oob_score)
     # importances = classifier.feature_importances_
     # print zip(vect.get_feature_names(), importances)
+
+  print "Score: " + str(score / args.numiters)
+  print "OOB Score: " + str(oob_score / args.numiters)
 
 def loan_status_labels(features):
   if features[0] == "Fully Paid":
@@ -156,6 +166,8 @@ def grade(args):
   # min_label = min(labels)
   # labels = [round(label - min_label) for label in labels]
 
+  score = 0.0
+
   for i in range(args.numiters):
 
     train_features, test_features, train_labels, test_labels =\
@@ -168,20 +180,22 @@ def grade(args):
     train_labels: size (k, 1) vector of the k training samples
     """
     if args.test == "grade":
-      # classifier = RandomForestRegressor(n_estimators=args.numtrees, \
-      #                                     n_jobs=-1, \
-      #                                     verbose=3,
-      #                                     oob_score=True,
-      #                                     max_features=None)
+      classifier = RandomForestRegressor(n_estimators=args.numtrees, \
+                                          n_jobs=-1, \
+                                          verbose=0,
+                                          oob_score=True,
+                                          max_features=None)
 
       # classifier = DecisionTreeClassifier(10000)
       # classifier = sklearn.tree.DecisionTreeClassifier()
 
-      classifier = RandomForestRegressor(n_trees=args.numtrees,
-        n_jobs=8,
-        max_depth=10000)
+      # classifier = RandomForestRegressor(n_trees=args.numtrees,
+      #   n_jobs=8,
+      #   max_depth=10000)
 
       classifier.fit(train_features, train_labels)
+      score += classifier.score(test_features, test_labels)
+
       # importances = classifier.feature_importances_
       # print zip(vect.get_feature_names(), importances)
       # print vect.feature_names_
@@ -190,14 +204,19 @@ def grade(args):
       # print importances
       # print importances.shape
 
-      print "Score: " + str(classifier.score(test_features, test_labels))
+      # print "Score: " + str(classifier.score(test_features, test_labels))
       #print classifier.oob_score
     elif args.test == "grade_logit":
-      # w, theta = logistic.ordinal_logistic_fit(train_features, train_labels)
-      # pred_labels = logistic.ordinal_logistic_predict(w, theta, test_features)
-      w, theta = ordinal_logit.fit(train_features, train_labels)
-      pred_labels = ordinal_logit.predict(w, theta, test_features)
+      w, theta = logistic.ordinal_logistic_fit(train_features, train_labels)
+      pred_labels = logistic.ordinal_logistic_predict(w, theta, test_features)
+      # w, theta = ordinal_logit.fit(train_features, train_labels)
+      # pred_labels = ordinal_logit.predict(w, theta, test_features)
       print "R squared score " + str(get_R_squared(pred_labels, test_labels))
+
+  # For printing average for scikit runs
+  # print "Score: " + str(score / args.numiters)
+
+
 
 def quality(args):
   feature_fields = [
@@ -274,6 +293,8 @@ def quality(args):
   # features = imp.transform(features)
   # print features.shape
 
+  score = 0.0
+  oob_score = 0.0
   for i in range(args.numiters):
 
     train_features, test_features, train_labels, test_labels =\
@@ -285,18 +306,18 @@ def quality(args):
     test_features: size (k, n) matrix of k samples of n features
     train_labels: size (k, 1) vector of the k training samples
     """
-    # classifier = RandomForestClassifier(n_estimators=args.numtrees, \
-    #                                     n_jobs=-1, \
-    #                                     verbose=3,
-    #                                     oob_score=True,
-    #                                     max_features=None)
+    classifier = RandomForestClassifier(n_estimators=args.numtrees, \
+                                        n_jobs=-1, \
+                                        verbose=0,
+                                        oob_score=True,
+                                        max_features=None)
 
     # classifier = DecisionTreeClassifier(10000)
     # classifier = sklearn.tree.DecisionTreeClassifier()
 
-    classifier = RandomForestClassifier(n_trees=args.numtrees,
-      n_jobs=8,
-      max_depth=10000)
+    # classifier = RandomForestClassifier(n_trees=args.numtrees,
+    #   n_jobs=8,
+    #   max_depth=10000)
 
     classifier.fit(train_features, train_labels)
     # importances = classifier.feature_importances_
@@ -306,8 +327,14 @@ def quality(args):
     # print vect.inverse_transform(importances)
     # print importances
     # print importances.shape
+    score += classifier.score(test_features, test_labels)
+    oob_score += classifier.oob_score_
+    # print "Score: " + str(classifier.score(test_features, test_labels))
+    # print "OOB Score: " + str(classifier.oob_score_)
 
-    print "Score: " + str(classifier.score(test_features, test_labels))
+  print "Score: " + str(score / args.numiters)
+  print "OOB Score: " + str(oob_score / args.numiters)
+
 
 if __name__=="__main__":
   parser = argparse.ArgumentParser()
