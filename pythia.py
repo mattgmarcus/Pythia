@@ -3,14 +3,14 @@ import argparse
 import numpy as np
 import scipy as sp
 from db_read import *
-from sklearn.ensemble import RandomForestClassifier
+# from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import Imputer
 from tree import DecisionTreeClassifier
 from tree import DecisionTreeRegressor
-# from forest import RandomForestClassifier
+from forest import RandomForestClassifier
 # from forest import RandomForestRegressor
 # from ordinal_logit import OrdinalLogisticRegressor
 #import sklearn.tree
