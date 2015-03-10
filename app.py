@@ -16,9 +16,9 @@ from models import *
 def hello():
     return render_template('index.html')
 
-@app.route('/predict', methods=['GET'])
+@app.route('/predict', methods=['POST'])
 def predict():
-  if request.method == 'GET':
+  if request.method == 'POST':
     sample = {}
     sample['loan_amount'] = int(request.form['loan_amount'])
     sample['debt_to_income'] = int(request.form['debt_to_income'])
