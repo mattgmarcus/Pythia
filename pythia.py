@@ -69,7 +69,7 @@ def accept(args):
     classifier.fit(train_features, train_labels)
     print "Score: " + str(classifier.score(test_features, test_labels))
     print "OOB Score: " + str(classifier.oob_score)
-    s = pickle.dump(classifier, open('loan_accept_rfc.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+    # s = pickle.dump(classifier, open('loan_accept_rfc.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
 
     # importances = classifier.feature_importances_
     # print zip(vect.get_feature_names(), importances)
