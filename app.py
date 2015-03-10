@@ -14,7 +14,8 @@ from models import *
 
 @app.route('/')
 def hello():
-    return render_template('index.html')
+    return "Hello World!"
+    # return render_template('index.html')
 
 @app.route('/predict', methods=['GET'])
 def predict():
