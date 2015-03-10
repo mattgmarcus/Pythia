@@ -5,7 +5,7 @@ import pickle
 from sklearn.feature_extraction import DictVectorizer
 
 app = Flask(__name__)
-app.config.from_object(os.environ['APP_SETTINGS'])
+# app.config.from_object(os.environ['APP_SETTINGS'])
 db = SQLAlchemy(app)
 loan_accept_rfc_model = pickle.load(open('data/loan_accept_rfc.pkl', 'r'))
 vect = pickle.load(open('data/dict_vectorizer.pkl', 'r'))
