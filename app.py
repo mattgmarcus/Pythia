@@ -16,16 +16,23 @@ from models import *
 def hello():
     return render_template('index.html')
 
-@app.route('/predict', methods=['GET'])
+@app.route('/predict', methods=['POST'])
 def predict():
-  if request.method == 'GET':
+  if request.method == 'POST':
     sample = {}
-    sample['loan_amount'] = int(request.form['loan_amount'])
-    sample['debt_to_income'] = int(request.form['debt_to_income'])
-    sample['zip_code'] = request.form['zip_code']
-    sample['address_state'] = request.form['address_state']
-    sample['employment_length'] = int(request.form['employment_length'])
+    # sample['loan_amount'] = float(request.form['loan_amount'])
+    # sample['debt_to_income'] = float(request.form['debt_to_income'])
+    # sample['zip_code'] = request.form['zip_code']
+    # sample['address_state'] = request.form['address_state']
+    # sample['employment_length'] = float(request.form['employment_length'])
 
+    sample[0] = float(request.form['loan_amount'])
+    sample[1] = float(request.form['debt_to_income'])
+    sample['3=' + request.form['address_state']] = 1.0
+    sample['2=' + request.form['zip_code']] = 1.0
+    sample[4] = float(request.form['employment_length'])
+    sample = [sample]
+    print sample
     sample = vect.transform(sample)
 
     print sample
