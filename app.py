@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, jsonify
 from flask.ext.sqlalchemy import SQLAlchemy
 import os
 import pickle
@@ -16,30 +16,33 @@ from models import *
 def hello():
     return render_template('index.html')
 
-@app.route('/predict', methods=['POST'])
+@app.route('/predict', methods=['GET'])
 def predict():
-  if request.method == 'POST':
+  if request.method == 'GET':
     sample = {}
-    # sample['loan_amount'] = float(request.form['loan_amount'])
-    # sample['debt_to_income'] = float(request.form['debt_to_income'])
-    # sample['zip_code'] = request.form['zip_code']
-    # sample['address_state'] = request.form['address_state']
-    # sample['employment_length'] = float(request.form['employment_length'])
-
-    sample[0] = float(request.form['loan_amount'])
-    sample[1] = float(request.form['debt_to_income'])
-    sample['3=' + request.form['address_state']] = 1.0
-    sample['2=' + request.form['zip_code']] = 1.0
-    sample[4] = float(request.form['employment_length'])
+    sample[0] = float(request.args.get('loan_amount'))
+    sample[1] = float(request.args.get('debt_to_income'))
+    sample['3=' + request.args.get('address_state')] = 1.0
+    sample['2=' + request.args.get('zip_code') + "xx"] = 1.0
+    sample[4] = float(request.args.get('employment_length'))
     sample = [sample]
+
     print sample
+
     sample = vect.transform(sample)
 
     print sample
 
-    print loan_accept_rfc_model.predict(sample)
+    pred = loan_accept_rfc_model.predict(sample)
 
-    return redirect('/')
+    if pred[0] == None:
+        res = 'N/A'
+    elif pred[0] == 1:
+        res = 'Accepted'
+    else:
+        res = 'Rejected'
+
+    return jsonify(result=res)
 
 
 
