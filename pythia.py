@@ -48,6 +48,7 @@ def accept(args):
   vect = DictVectorizer(sparse=False)
   #print features
   features = vect.fit_transform(features)
+  # sys.setrecursionlimit(10000)
   # pic = pickle.dump(vect, open('data/dict_vectorizer.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
   #print features.shape
 
