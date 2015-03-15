@@ -4,17 +4,17 @@ import numpy as np
 import scipy as sp
 from db_read import *
 # from sklearn.ensemble import RandomForestClassifier
-from sklearn.ensemble import RandomForestRegressor
+# from sklearn.ensemble import RandomForestRegressor
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.cross_validation import train_test_split
 from sklearn.preprocessing import Imputer
 from tree import DecisionTreeClassifier
 from tree import DecisionTreeRegressor
 from forest import RandomForestClassifier
-# from forest import RandomForestRegressor
-# from ordinal_logit import OrdinalLogisticRegressor
+from forest import RandomForestRegressor
+from ordinal_logit import OrdinalLogisticRegressor
 #import sklearn.tree
-import ordinal_logit
+# import ordinal_logit
 # import sys
 # sys.path.append("../minirank")
 # from minirank import logistic
@@ -46,11 +46,11 @@ def accept(args):
 
   features = [dict(enumerate(feature)) for feature in features]
   vect = DictVectorizer(sparse=False)
-  #print features
+
   features = vect.fit_transform(features)
   # pic = pickle.dump(vect, open('data/dict_vectorizer.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
-  #print features.shape
 
+  # Use when trying to average scores
   # score = 0.0
   # oob_score = 0.0
 
@@ -63,26 +63,28 @@ def accept(args):
       max_depth=10000,
       use_posterior=args.posterior)
 
+    # Code specifically for scikit
     # classifier = RandomForestClassifier(n_estimators=args.numtrees, \
     #                                     n_jobs=-1, \
     #                                     verbose=3,
     #                                     oob_score=True,
     #                                     max_features=None)
-  
-    classifier.fit(train_features, train_labels)
-
+    # This will add up the scores for the average later
     # score += classifier.score(test_features, test_labels)
     # oob_score += classifier.oob_score_
-
-    # print "Score: " + str(classifier.score(test_features, test_labels))
-    # print "OOB Score: " + str(classifier.oob_score)
-    print "Score: " + str(classifier.score(test_features, test_labels))
-    print "OOB Score: " + str(classifier.oob_score)
-    s = pickle.dump(classifier, open('loan_accept_rfc.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
-
+    # This prints out the feature importances
     # importances = classifier.feature_importances_
     # print zip(vect.get_feature_names(), importances)
 
+    classifier.fit(train_features, train_labels)
+
+    print "Score: " + str(classifier.score(test_features, test_labels))
+    print "OOB Score: " + str(classifier.oob_score)
+
+    # Get the pickle for the web app
+    # s = pickle.dump(classifier, open('loan_accept_rfc.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+
+  # This will print out the average score over all iterations
   # print "Score: " + str(score / args.numiters)
   # print "OOB Score: " + str(oob_score / args.numiters)
 
