@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 import csv
 import os
-from models import Loan
+from models import *
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config.from_object("config.TestingConfig")
+app.config.from_object("config.DevelopmentConfig")
 db = SQLAlchemy(app)
 
 
@@ -21,7 +21,6 @@ def read_accepted_loans(filename):
         continue
 
       row = { k: strip_whitespace(v) for k, v in row.items() }
-
       loan = Loan(row)
 
       db.session.add(loan)
@@ -51,4 +50,4 @@ def strip_whitespace(val):
 
 if __name__=="__main__":
     read_accepted_loans("LoanStatsSmall.csv")
-    read_rejected_loans("RejectedLoanStatsSmall.csv")
+    read_rejected_loans("RejectLoanStatsSmall.csv")
