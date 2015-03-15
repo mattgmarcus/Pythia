@@ -43,7 +43,7 @@ echo "Grade: T=50, M=5000"
 echo "Grade: T=100, M=5000"
 ./pythia.py grade -t 100 -m 5000 -n 2
 
-echo "Grade: T=500, M=5000"
-./pythia.py grade -t 500 -m 5000 -n 2
+# echo "Grade: T=500, M=5000"
+# ./pythia.py grade -t 500 -m 5000 -n 2
 
 
