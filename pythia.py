@@ -59,7 +59,7 @@ def accept(args):
     classifier = RandomForestClassifier(n_trees=args.numtrees,
       n_jobs=8,
       max_depth=10000,
-      use_posterior=args.posterior)
+      use_posterior=True)
 
     # Code specifically for scikit
     # classifier = RandomForestClassifier(n_estimators=args.numtrees, \
@@ -78,6 +78,7 @@ def accept(args):
 
     classifier.fit(train_features, train_labels)
 
+    print "Results for Accept on iteration %s" % (i + 1)
     print "Score: " + str(classifier.score(test_features, test_labels))
     print "OOB Score: " + str(classifier.oob_score)
 
@@ -198,6 +199,7 @@ def grade(args):
         max_depth=10000)
 
       classifier.fit(train_features, train_labels)
+      print "Results for Grade on iteration %s" % (i + 1)
       print "Score: " + str(classifier.score(test_features, test_labels))
 
       # Use if trying to average score
@@ -211,7 +213,8 @@ def grade(args):
       w, theta = ordinal_logit.fit(train_features, train_labels)
       pred_labels = ordinal_logit.predict(w, theta, test_features)
 
-      print "R squared score " + str(get_R_squared(pred_labels, test_labels))
+      print "Results for Grade Logit on iteration %s" % (i + 1)
+      print "R squared score: " + str(get_R_squared(pred_labels, test_labels))
 
   # For printing average score
   # print "Average Score: " + str(score / args.numiters)
@@ -300,7 +303,8 @@ def quality(args):
 
     classifier = RandomForestClassifier(n_trees=args.numtrees,
       n_jobs=8,
-      max_depth=10000)
+      max_depth=10000,
+      use_posterior=True)
 
     # Code specifically for scikit
     # classifier = RandomForestClassifier(n_estimators=args.numtrees, \
@@ -318,6 +322,7 @@ def quality(args):
 
     classifier.fit(train_features, train_labels)
 
+    print "Results for Quality on iteration %s" % (i + 1)
     print "Score: " + str(classifier.score(test_features, test_labels))
     print "OOB Score: " + str(classifier.oob_score)
 
