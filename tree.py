@@ -96,8 +96,6 @@ class DecisionTree(object):
       self (DecisionTreeClassifier)
     """
 
-    # TODO: we'll have to figure out a way to take advantage of column indexing here.
-    # May have to convert back to nparray as passed in later
     if sanitize:
       samples = sanitize_samples(samples)
       samples = np.array(samples)
@@ -110,33 +108,6 @@ class DecisionTree(object):
 
 
 
-  # def _sanitize_samples(self, samples):
-    # TODO: Finish. Deal with issue where arrays with mixed types have all values
-    # as strings
-    # columns_to_delete = []
-    # for index, feature in enumerate(samples[0]):
-    #   if type(feature) is str:
-    #     columns_to_delete.append(index)
-    #     samples = self._vectorize_string(samples, index)
-
-    # for col in columns_to_delete.reverse():
-    #   samples = np.delete(samples, col, 1)
-
-  # Function to take categorical feature and convert to binary values in features
-  # def _vectorize_string(self, samples, column_num):
-  #   feature_values = list(set(samples[:,column_num]))
-  #   index = { key: val for val, key in enumerate(feature_values) }
-
-  #   vectors = []
-  #   for sample in samples:
-  #     vector = [0] * len(index)
-  #     vector[index[sample[column_num]]] = 1
-  #     vectors.append(vector)
-
-  #   # samples = np.delete(samples, column_num, 1)
-  #   samples = np.append(samples, np.array(vectors), 1)
-  #   return samples
-
   def _fit(self, samples, labels, randomize, current_depth=1):
     # Base cases
     # No samples/labels
@@ -148,9 +119,9 @@ class DecisionTree(object):
     elif (len(set(labels))) == 1:
       return self.make_leaf(labels)
 
-    # current_depth >= max_depth || len(samples) < 5
+    # current_depth >= max_depth || len(samples) < 20
     #   return leaf node, where value=mode(current labels)
-    elif (current_depth >= self.max_depth) or (len(samples) < 20): #TODO: Change min # samples
+    elif (current_depth >= self.max_depth) or (len(samples) < 20):
       return self.make_leaf(labels)
 
     # Recursive case
@@ -213,8 +184,6 @@ class DecisionTree(object):
 
 
   def predict(self, test_samples):
-    # TODO: we'll have to figure out a way to take advantage of column indexing here.
-    # May have to convert back to nparray as passed in later
     samples = sanitize_samples(test_samples)
     samples = np.array(samples)
 
@@ -291,14 +260,6 @@ class DecisionTreeRegressor(DecisionTree):
     return self._msd_error(labels)
 
   def _msd_error(self, labels):
-    # num_labels = len(labels)
-    # mean = float(sum(labels)) / num_labels
-    # sum_ssd = 0
-    # for label in labels:
-    #   sum_ssd += (label - mean)**2
-
-    # return sum_ssd / num_labels
-    # # return sum([np.power(label - mean, 2) for label in labels]) / num_labels
     return np.array(labels).var()
 
   def get_leaf_value(self, current_node):

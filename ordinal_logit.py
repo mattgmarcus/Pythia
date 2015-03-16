@@ -13,7 +13,7 @@ def fit(samples, labels):
   samples = samples[idx]
   labels = labels[idx]
 
-  # labels should now be continuous and start at 0
+  # Labels are continuous and start at 0
   unique_labels = np.unique(labels)
   for i, u in enumerate(unique_labels):
       labels[labels == u] = i
@@ -107,7 +107,8 @@ def fit(samples, labels):
 
   return w, theta
 
-# TODO: Update this
+# Credit: this code was copied closely from lines 242-245 here:
+# https://github.com/fabianp/minirank/blob/master/minirank/logistic.py
 def predict(w, theta, samples):
   xw = samples.dot(w)
   theta[-1] = float("inf")

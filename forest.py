@@ -131,8 +131,7 @@ class RandomForest(object):
   def score(self, test_samples, test_labels):
     pass
 
-  # TODO: no one got time for this
-  # But if we do, this will replace the dictvectorizer stuff
+  # Possible future replacement for scikit dictvectorizer
   def feature_relevances(self):
     pass
 
@@ -146,7 +145,6 @@ class RandomForestClassifier(RandomForest):
     return DecisionTreeClassifier(self.max_depth, use_posterior=self.use_posterior, posterior_label=1)
 
   def _predict(self, predictions):
-    #TODO: ATTN YONDON: np magic for summing along axis
     posteriors = np.apply_along_axis(sum_posterior, 0, predictions)
     k = self.n_trees / 2
     return np.array([1 if posterior > k else 0 for posterior in posteriors])
