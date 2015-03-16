@@ -4,6 +4,7 @@ Setup
 To set up your environment, follow these instructions:
 
 If you don’t have postgresql installed, you can get it here: http://postgresapp.com
+You'll need to make sure to move the postgres app to your /Applications folder, which it will prompt you to do when you start the application.
 You'll need to add this to your PATH in order to access Postgres commands. The easiest way is to put it in your ~/.bash_profile. You can do that in one line:
   echo "export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/9.4/bin" >> ~/.bash_profile
 Or if you'd prefer to do it on your own, you can just copy this line in:
