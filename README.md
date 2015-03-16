@@ -90,6 +90,8 @@ python pythia.py grade_logit -n 2 -m 500
 python pythia.py quality -n 2 -m 500 -t 10
 ```
 
+Note: We are providing a subset of our data here, since we have too many records to include in the submission. This should give you about 1.3K accepted loans and 2K rejected loans. When we set up the database with these data sets, we were seeing results worse than what we saw with more data. This is due to misrepresentation of the entire dataset, as we selected only a small subset here that may not be representative of the whole data set. If you would like access to the entire dataset, you can download them from the Lending Club link provided in the writeup.
+
 
 Web Application
 ---------------------------------
