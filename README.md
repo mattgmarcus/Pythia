@@ -1,3 +1,7 @@
+To view in browser (with nice formatting)
+--------------------------
+Go here: https://gist.github.com/mattgmarcus/bc0908c9be25a832611f
+
 Setup
 --------------------------
 
