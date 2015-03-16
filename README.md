@@ -4,23 +4,34 @@ Setup
 To set up your environment, follow these instructions:
 
 If you don’t have postgresql installed, you can get it here: http://postgresapp.com
+You'll need to add this to your PATH in order to access Postgres commands. The easiest way is to put it in your ~/.bash_profile. You can do that in one line:
+  echo "export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/9.4/bin" >> ~/.bash_profile
+Or if you'd prefer to do it on your own, you can just copy this line in:
+   export PATH=$PATH:/Applications/Postgres.app/Contents/Versions/9.4/bin
+Either way, start a new terminal window afterwards to source the updated bash profile so the new PATH variable is in effect.
+
 If you see issues (now or later) related to libssl or libcrypto, try setting up symbolic links with these two lines. This worked for us:
   sudo ln -s /Applications/Postgres.app/Contents/Versions/9.4/lib/libssl.1.0.0.dylib /usr/lib
   sudo ln -s /Applications/Postgres.app/Contents/Versions/9.4/lib/libcrypto.1.0.0.dylib /usr/lib
 
 
-To install our dependencies:
-   easy_install pip
-   pip install virtualenv
+To install our dependencies (Note: you may or may not have to use sudo for some of these. I included sudo in front of the ones I think you may have to for):
+   sudo easy_install pip
+   sudo pip install virtualenv
    virtualenv venv
    source venv/bin/activate
    pip install -r requirements.txt
+   pip install psycopg2
 
+If the installation fails on psycopg2, make sure you have the Apple developer command line tools installed (you need the gcc capabilities to compile psycopg2)
 
 To setup the database (which should result in 1231 records for accepted loans and 1998 for rejected loans)
    createdb pythia_dev
    python manage.py db upgrade
    python init_test_db.py
+
+If you want to delete the database later, you can do this command:
+   dropdb pythia_dev
 
 How to run our code
 ---------------------------------
