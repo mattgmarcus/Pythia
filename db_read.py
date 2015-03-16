@@ -30,7 +30,7 @@ def get_data(db, feature_fields=None, label_fields=None, sql=None,
 
   #fields = ','.join(label_fields) + ',' + ','.join(feature_fields)
   meta = MetaData()
-  engine = create_engine("pythia_dev", isolation_level="READ UNCOMMITTED")
+  engine = create_engine("postgresql://localhost/pythia_dev", isolation_level="READ UNCOMMITTED")
   # TODO need to make the WHERE a parameter?
   #sql = text("select %s from %s where loan_status in ('Charged Off', 'Fully Paid')" % (fields, db))
 

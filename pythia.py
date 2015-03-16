@@ -12,9 +12,9 @@ from tree import DecisionTreeClassifier
 from tree import DecisionTreeRegressor
 from forest import RandomForestClassifier
 from forest import RandomForestRegressor
-from ordinal_logit import OrdinalLogisticRegressor
+# from ordinal_logit import OrdinalLogisticRegressor
 #import sklearn.tree
-# import ordinal_logit
+import ordinal_logit
 # import sys
 # sys.path.append("../minirank")
 # from minirank import logistic
@@ -41,12 +41,10 @@ def accept(args):
   acc_features, _ = get_data("loans", sql=acc_sql, num_samples=args.numsamples, shuffle=True, testing=True)
   acc_labels = [1] * len(acc_features) # label 1 for accepted
 
-  # TODO concatenate together and feed to classifier
   features, labels = rej_features + acc_features, rej_labels + acc_labels
 
   features = [dict(enumerate(feature)) for feature in features]
   vect = DictVectorizer(sparse=False)
-
   features = vect.fit_transform(features)
   # pic = pickle.dump(vect, open('data/dict_vectorizer.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -75,6 +73,8 @@ def accept(args):
     # This prints out the feature importances
     # importances = classifier.feature_importances_
     # print zip(vect.get_feature_names(), importances)
+    # print "Score: " + str(classifier.score(test_features, test_labels))
+    # print "OOB Score: " + str(classifier.oob_score_)
 
     classifier.fit(train_features, train_labels)
 
@@ -85,8 +85,8 @@ def accept(args):
     # s = pickle.dump(classifier, open('loan_accept_rfc.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
 
   # This will print out the average score over all iterations
-  # print "Score: " + str(score / args.numiters)
-  # print "OOB Score: " + str(oob_score / args.numiters)
+  # print "Average Score: " + str(score / args.numiters)
+  # print "Average OOB Score: " + str(oob_score / args.numiters)
 
 def loan_status_labels(features):
   if features[0] == "Fully Paid":
@@ -101,7 +101,11 @@ def loan_grade_labels(features):
   label = features[0]
   # Examples: A1 = 1, G5 = 35, C2=12
   return grade_dict[label[0]]*5 + int(label[1]) - 1
+
+  # If using grades instead of subgrades:
   # return grade_dict[label[0]]
+
+  # If using interest rates instead of subgrades:
   # return features[0]
 
 def remove_label(features, last_label_index):
@@ -162,19 +166,10 @@ def grade(args):
 
   features = [dict(enumerate(feature)) for feature in features]
   vect = DictVectorizer(sparse=False)
-  #print features
   features = vect.fit_transform(features)
-  #print features.shape
 
-  # imp = Imputer(missing_values='NaN', strategy='mean', axis=0)
-  # imp.fit(features)
-  # features = imp.transform(features)
-  # print features.shape
-
-  # min_label = min(labels)
-  # labels = [round(label - min_label) for label in labels]
-
-  score = 0.0
+  # Use when trying to average scores
+  # score = 0.0
 
   for i in range(args.numiters):
 
@@ -188,41 +183,38 @@ def grade(args):
     train_labels: size (k, 1) vector of the k training samples
     """
     if args.test == "grade":
-      classifier = RandomForestRegressor(n_estimators=args.numtrees, \
-                                          n_jobs=-1, \
-                                          verbose=0,
-                                          oob_score=True,
-                                          max_features=None)
-
-      # classifier = DecisionTreeClassifier(10000)
-      # classifier = sklearn.tree.DecisionTreeClassifier()
-
-      # classifier = RandomForestRegressor(n_trees=args.numtrees,
-      #   n_jobs=8,
-      #   max_depth=10000)
-
-      classifier.fit(train_features, train_labels)
-      score += classifier.score(test_features, test_labels)
-
+      # Code specifically for scikit
+      # classifier = RandomForestRegressor(n_estimators=args.numtrees, \
+      #                                     n_jobs=-1, \
+      #                                     verbose=0,
+      #                                     oob_score=True,
+      #                                     max_features=None)
+      # This prints out the feature importances
       # importances = classifier.feature_importances_
       # print zip(vect.get_feature_names(), importances)
-      # print vect.feature_names_
-      # print vect.vocabulary_
-      # print vect.inverse_transform(importances)
-      # print importances
-      # print importances.shape
 
-      # print "Score: " + str(classifier.score(test_features, test_labels))
-      #print classifier.oob_score
+      classifier = RandomForestRegressor(n_trees=args.numtrees,
+        n_jobs=8,
+        max_depth=10000)
+
+      classifier.fit(train_features, train_labels)
+      print "Score: " + str(classifier.score(test_features, test_labels))
+
+      # Use if trying to average score
+      # score += classifier.score(test_features, test_labels)
+
     elif args.test == "grade_logit":
-      w, theta = logistic.ordinal_logistic_fit(train_features, train_labels)
-      pred_labels = logistic.ordinal_logistic_predict(w, theta, test_features)
-      # w, theta = ordinal_logit.fit(train_features, train_labels)
-      # pred_labels = ordinal_logit.predict(w, theta, test_features)
+      # Code for the minirank implementation (not ours)
+      # w, theta = logistic.ordinal_logistic_fit(train_features, train_labels)
+      # pred_labels = logistic.ordinal_logistic_predict(w, theta, test_features)
+
+      w, theta = ordinal_logit.fit(train_features, train_labels)
+      pred_labels = ordinal_logit.predict(w, theta, test_features)
+
       print "R squared score " + str(get_R_squared(pred_labels, test_labels))
 
-  # For printing average for scikit runs
-  # print "Score: " + str(score / args.numiters)
+  # For printing average score
+  # print "Average Score: " + str(score / args.numiters)
 
 
 
@@ -283,24 +275,14 @@ def quality(args):
                               features_processing=remove_loan_status,
                               shuffle=True,
                               testing=True)
-  #print features, labels
 
-  # features = [dict(r.iteritems()) for r in features]
-  # vect = DictVectorizer()
-  # vectorized_sparse = vect.fit_transform(features)
-  # features = vectorized_sparse.toarray()
+
 
   features = [dict(enumerate(feature)) for feature in features]
   vect = DictVectorizer(sparse=False)
-  #print features
   features = vect.fit_transform(features)
-  #print features.shape
 
-  # imp = Imputer(missing_values='NaN', strategy='mean', axis=0)
-  # imp.fit(features)
-  # features = imp.transform(features)
-  # print features.shape
-
+  # Use when trying to average scores
   # score = 0.0
   # oob_score = 0.0
 
@@ -315,36 +297,37 @@ def quality(args):
     test_features: size (k, n) matrix of k samples of n features
     train_labels: size (k, 1) vector of the k training samples
     """
-    classifier = RandomForestClassifier(n_estimators=args.numtrees, \
-                                        n_jobs=-1, \
-                                        verbose=0,
-                                        oob_score=True,
-                                        max_features=None)
 
-    # classifier = DecisionTreeClassifier(10000)
-    # classifier = sklearn.tree.DecisionTreeClassifier()
+    classifier = RandomForestClassifier(n_trees=args.numtrees,
+      n_jobs=8,
+      max_depth=10000)
 
-    # classifier = RandomForestClassifier(n_trees=args.numtrees,
-    #   n_jobs=8,
-    #   max_depth=10000)
-
-    classifier.fit(train_features, train_labels)
-    # importances = classifier.feature_importances_
-    # print zip(vect.get_feature_names(), importances)
-    # print vect.feature_names_
-    # print vect.vocabulary_
-    # print vect.inverse_transform(importances)
-    # print importances
-    # print importances.shape
+    # Code specifically for scikit
+    # classifier = RandomForestClassifier(n_estimators=args.numtrees, \
+    #                                     n_jobs=-1, \
+    #                                     verbose=0,
+    #                                     oob_score=True,
+    #                                     max_features=None)
+    # This will add up the scores for the average later
     # score += classifier.score(test_features, test_labels)
     # oob_score += classifier.oob_score_
+    # importances = classifier.feature_importances_
+    # print zip(vect.get_feature_names(), importances)
+    # print "Score: " + str(classifier.score(test_features, test_labels))
+    # print "OOB Score: " + str(classifier.oob_score_)
+
+    classifier.fit(train_features, train_labels)
+
     print "Score: " + str(classifier.score(test_features, test_labels))
-    print "OOB Score: " + str(classifier.oob_score_)
+    print "OOB Score: " + str(classifier.oob_score)
 
-  # print "Score: " + str(score / args.numiters)
-  # print "OOB Score: " + str(oob_score / args.numiters)
-
+    # Get the pickle for the web app
     # s = pickle.dump(classifier, open('data/loan_quality_rfc.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
+
+  # This will print out the average score over all iterations
+  # print "Average Score: " + str(score / args.numiters)
+  # print "Average OOB Score: " + str(oob_score / args.numiters)
+
 
 if __name__=="__main__":
   parser = argparse.ArgumentParser()
@@ -356,9 +339,6 @@ if __name__=="__main__":
                       type=int, default=1)
   parser.add_argument("-m", "--numsamples", help="number of samples to run on",
                       type=int, default=1000)
-  parser.add_argument("-p", "--posterior", help="use posterior probability instead of mode",
-                      default=True)
-  parser.add_argument("-s", "--usesklearn", help="use sklearn")
   args = parser.parse_args()
   #print args.test
   if args.test == "accept":
