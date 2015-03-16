@@ -5,35 +5,6 @@
   <h1>
     Loan Approval and Quality Prediction in the Lending Club Marketplace
   </h1>
-</div>
-
-<div id="form_container">
-  <form id="accept_loan_form">
-    <div class="form-group">
-      <label for="loan_amount">Loan Amount</label>
-      <input type="number" class="form-control" id="loan_amount" placeholder="Enter loan amount">
-    </div>
-    <div class="form-group">
-      <label for="debt_to_income">Debt-to-Income</label>
-      <input type="number" class="form-control" id="debt_to_income" placeholder="Enter Debt-to-Income as a decimal value">
-    </div>
-    <div class="form-group">
-      <label for="zip_code">Zip Code</label>
-      <input type="number" class="form-control" id="zip_code" placeholder="Enter the first three digits of your zip code" maxlength="3">
-    </div>
-
-    <div class="form-group">
-      <label for="address_state">State of Residence</label>
-      <input type="text" class="form-control" id="address_state" placeholder="Enter the initials of the state you live in" maxlength="2">
-    </div>
-
-    <div class="form-group">
-      <label for="employment_length">Have you been employed for more than 1 year?</label>
-      <select class="form-control" id="employment_length">
-        <option>Yes</option>
-        <option>No</option>
-      </select>
-    </div>
 
   <br>
 
@@ -49,7 +20,7 @@
         </div>
         <div class="form-group">
             <label for="debt_to_income">Debt-To-Income</label>
-            <input type="number" class="form-control" name="debt_to_income" placeholder="Debt-To-Income as a decimal">
+            <input type="number" class="form-control" name="debt_to_income" placeholder="Debt-To-Income">
         </div>
         <div class="form-group">
             <label for="zip_code">Zip Code</label>
@@ -60,8 +31,8 @@
             <input type="text" class="form-control" name="address_state" placeholder="Initials of the state you live in">
         </div>
         <div class="form-group">
-            <label for="employment_length">Employment</label>
-            <input type="text" class="form-control" name="employment_length" placeholder="Employment length">
+            <label for="employment_length">Employment Length</label>
+            <input type="text" class="form-control" name="employment_length" placeholder="0 if <1 year, 1 if >1 year">
         </div>
 
         <button type="submit" id="submit_button" class="btn btn-default">Submit</button>
@@ -73,9 +44,4 @@
   </div>
 
 </div>
-
-<div id="approval_result_container" style="display:none;">
-<p>Your loan would be: <span id="approval_result"></span></p>
-</div>
-
 {% endblock %}

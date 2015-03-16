@@ -14,12 +14,11 @@ from models import *
 
 @app.route('/')
 def hello():
-    return "Hello World!"
-    # return render_template('index.html')
+    return render_template('index.html')
 
-@app.route('/predict', methods=['POST'])
+@app.route('/predict', methods=['GET'])
 def predict():
-  if request.method == 'POST':
+  if request.method == 'GET':
     sample = {}
     sample[0] = float(request.args.get('loan_amount'))
     sample[1] = float(request.args.get('debt_to_income'))
