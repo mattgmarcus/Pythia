@@ -46,6 +46,7 @@ def accept(args):
   features = [dict(enumerate(feature)) for feature in features]
   vect = DictVectorizer(sparse=False)
   features = vect.fit_transform(features)
+  # sys.setrecursionlimit(10000)
   # pic = pickle.dump(vect, open('data/dict_vectorizer.pkl', 'wb'), protocol=pickle.HIGHEST_PROTOCOL)
 
   # Use when trying to average scores

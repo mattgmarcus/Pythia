@@ -1,12 +1,12 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, jsonify
 from flask.ext.sqlalchemy import SQLAlchemy
 import os
 import pickle
 from sklearn.feature_extraction import DictVectorizer
 
 app = Flask(__name__)
-# app.config.from_object(os.environ['APP_SETTINGS'])
 db = SQLAlchemy(app)
+
 loan_accept_rfc_model = pickle.load(open('data/loan_accept_rfc.pkl', 'r'))
 vect = pickle.load(open('data/dict_vectorizer.pkl', 'r'))
 
@@ -21,19 +21,29 @@ def hello():
 def predict():
   if request.method == 'POST':
     sample = {}
-    sample['loan_amount'] = int(request.form['loan_amount'])
-    sample['debt_to_income'] = int(request.form['debt_to_income'])
-    sample['zip_code'] = request.form['zip_code']
-    sample['address_state'] = request.form['address_state']
-    sample['employment_length'] = int(request.form['employment_length'])
+    sample[0] = float(request.args.get('loan_amount'))
+    sample[1] = float(request.args.get('debt_to_income'))
+    sample['3=' + request.args.get('address_state')] = 1.0
+    sample['2=' + request.args.get('zip_code') + "xx"] = 1.0
+    sample[4] = float(request.args.get('employment_length'))
+    sample = [sample]
+
+    print sample
 
     sample = vect.transform(sample)
 
     print sample
 
-    print loan_accept_rfc_model.predict(sample)
+    pred = loan_accept_rfc_model.predict(sample)
 
-    return redirect('/')
+    if pred[0] == None:
+        res = 'N/A'
+    elif pred[0] == 1:
+        res = 'Accepted'
+    else:
+        res = 'Rejected'
+
+    return jsonify(result=res)
 
 
 

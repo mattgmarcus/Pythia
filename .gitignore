@@ -9,3 +9,4 @@ venv
 *.xlsx
 *.numbers
 runtimes
+.env

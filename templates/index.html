@@ -35,10 +35,43 @@
       </select>
     </div>
 
+  <br>
 
-    </div>
-    <button type="submit" class="btn btn-default">Submit</button>
-  </form>
+  <p>Check if Lending Club will approve or reject your loan</p>
+
+  <br>
+
+  <div id="form_container">
+      <form id="accept_loan_form">
+        <div class="form-group">
+            <label for="loan_amount">Loan Amount</label>
+            <input type="number" class="form-control" name="loan_amount" placeholder="Loan amount">
+        </div>
+        <div class="form-group">
+            <label for="debt_to_income">Debt-To-Income</label>
+            <input type="number" class="form-control" name="debt_to_income" placeholder="Debt-To-Income as a decimal">
+        </div>
+        <div class="form-group">
+            <label for="zip_code">Zip Code</label>
+            <input type="text" class="form-control" name="zip_code" placeholder="First three digits of your zip code">
+        </div>
+        <div class="form-group">
+            <label for="address_state">Address State</label>
+            <input type="text" class="form-control" name="address_state" placeholder="Initials of the state you live in">
+        </div>
+        <div class="form-group">
+            <label for="employment_length">Employment</label>
+            <input type="text" class="form-control" name="employment_length" placeholder="Employment length">
+        </div>
+
+        <button type="submit" id="submit_button" class="btn btn-default">Submit</button>
+      </form>
+
+      <div id="approval_result_container" style="display:none;">
+          <p>Your loan would be: <strong><span id="approval_result"></span></strong></p>
+      </div>
+  </div>
+
 </div>
 
 <div id="approval_result_container" style="display:none;">
